@@ -1,6 +1,6 @@
-# Polars Constraint Scheduler
+# Polars Scheduler
 
-A Polars plugin for easily scheduling recurring events with constraints."
+A Polars plugin for easily scheduling recurring events with constraints.
 
 ## Installation
 
@@ -67,11 +67,3 @@ and then you would validate or schedule ahead.
 │ gym          ┆ exercise   ┆ session ┆ null   ┆ null    ┆ 3x weekly ┆ []           ┆ null         │
 └──────────────┴────────────┴─────────┴────────┴─────────┴───────────┴──────────────┴──────────────┘
 ```
-
-## Contributing
-
-Feel free to open issues or submit pull requests for improvements or bug fixes.
-
-## License
-
-MIT License

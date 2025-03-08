@@ -6,7 +6,7 @@ requires = [
 
 [project]
 name = "polars-scheduler"
-version = "0.1.2"
+version = "0.1.0"
 description = "A Polars plugin for easily scheduling recurring events with constraints."
 readme = "README.md"
 authors = [
@@ -43,5 +43,5 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/lmmx/polars-constraint-scheduler"
-Repository = "https://github.com/lmmx/polars-constraint-scheduler.git"
+Homepage = "https://github.com/lmmx/polars-scheduler"
+Repository = "https://github.com/lmmx/polars-scheduler.git"
