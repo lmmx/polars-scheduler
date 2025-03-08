@@ -1,5 +1,5 @@
 import polars as pl
-import polars_scheduler
+import polars_scheduler  # noqa: F401
 
 # Create a new empty schedule
 schedule = pl.DataFrame().scheduler.new()
@@ -13,11 +13,17 @@ schedule = schedule.scheduler.add(
 )
 
 schedule = schedule.scheduler.add(
-    event="lunch", category="meal", unit="serving", frequency="1x daily"
+    event="lunch",
+    category="meal",
+    unit="serving",
+    frequency="1x daily",
 )
 
 schedule = schedule.scheduler.add(
-    event="dinner", category="meal", unit="serving", frequency="1x daily"
+    event="dinner",
+    category="meal",
+    unit="serving",
+    frequency="1x daily",
 )
 
 schedule = schedule.scheduler.add(
@@ -63,7 +69,10 @@ schedule = schedule.scheduler.add(
 )
 
 schedule = schedule.scheduler.add(
-    event="gym", category="exercise", unit="session", frequency="3x weekly"
+    event="gym",
+    category="exercise",
+    unit="session",
+    frequency="3x weekly",
 )
 
 # Print the schedule

@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from typing import List, Dict, Any, Optional
-
 import polars as pl
 from polars.api import register_dataframe_namespace
+
+__all__ = ["SchedulerPlugin"]
 
 
 @register_dataframe_namespace("scheduler")
@@ -24,7 +24,7 @@ class SchedulerPlugin:
                 "Frequency": pl.String,
                 "Constraints": pl.List(pl.String),
                 "Note": pl.String,
-            }
+            },
         )
 
     def add(
@@ -32,11 +32,11 @@ class SchedulerPlugin:
         event: str,
         category: str,
         unit: str,
-        amount: Optional[float] = None,
-        divisor: Optional[int] = None,
-        frequency: Optional[str] = None,
-        constraints: List[str] = None,
-        note: Optional[str] = None,
+        amount: float | None = None,
+        divisor: int | None = None,
+        frequency: str | None = None,
+        constraints: list[str] = None,
+        note: str | None = None,
     ) -> pl.DataFrame:
         """
         Add a new resource event to the schedule.
