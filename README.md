@@ -1,5 +1,13 @@
 # Polars Scheduler
 
+<!-- [![downloads](https://static.pepy.tech/badge/polars-scheduler/month)](https://pepy.tech/project/polars-scheduler) -->
+[![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)
+[![pdm-managed](https://img.shields.io/badge/pdm-managed-blueviolet)](https://pdm.fming.dev)
+[![PyPI](https://img.shields.io/pypi/v/polars-scheduler.svg)](https://pypi.org/project/polars-scheduler)
+[![Supported Python versions](https://img.shields.io/pypi/pyversions/polars-scheduler.svg)](https://pypi.org/project/polars-scheduler)
+[![License](https://img.shields.io/pypi/l/polars-scheduler.svg)](https://pypi.python.org/pypi/polars-scheduler)
+[![pre-commit.ci status](https://results.pre-commit.ci/badge/github/lmmx/polars-scheduler/master.svg)](https://results.pre-commit.ci/latest/github/lmmx/polars-scheduler/master)
+
 A Polars plugin for easily scheduling recurring events with constraints.
 
 ## Installation
