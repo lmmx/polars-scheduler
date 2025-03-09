@@ -55,6 +55,11 @@ class SchedulerPlugin:
         """
         if constraints is None:
             constraints = []
+        else:
+            for constr in constraints:
+                constr(constraint)
+        if frequency is not None:
+            freq(frequency)
 
         # Create a new row
         new_row = pl.DataFrame(
@@ -64,7 +69,7 @@ class SchedulerPlugin:
                 "Unit": [unit],
                 "Amount": [amount],
                 "Divisor": [divisor],
-                "Frequency": [freq(frequency)],
+                "Frequency": [frequency],
                 "Constraints": [constraints],
                 "Note": [note],
             },

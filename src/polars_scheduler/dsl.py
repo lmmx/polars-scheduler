@@ -2,7 +2,7 @@ periods = "yearly monthly weekly daily".split()
 periods_abbrev = "y mo w d h m s".split()
 
 
-def freq(frequency: str) -> None:
+def freq(frequency: str) -> str:
     """Validate frequencies against a simple DSL.
 
     For example: "daily", "1x daily", "1x /d", "1x /1d", etc.
@@ -28,3 +28,11 @@ def freq(frequency: str) -> None:
             assert n_per_prefix.isnumeric(), f"{n_per_prefix} should be an int"
             n_per = int(n_per_prefix)
     return frequency
+
+
+def constr(constraint: str) -> str:
+    """Validate constraints against a simple DSL.
+
+    The targets cannot be verified per-row, only validated as usable identifiers.
+    """
+    ...
