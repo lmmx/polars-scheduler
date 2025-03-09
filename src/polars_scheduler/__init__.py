@@ -3,6 +3,8 @@ from __future__ import annotations
 import polars as pl
 from polars.api import register_dataframe_namespace
 
+from .dsl import freq
+
 __all__ = ["SchedulerPlugin"]
 
 
@@ -62,7 +64,7 @@ class SchedulerPlugin:
                 "Unit": [unit],
                 "Amount": [amount],
                 "Divisor": [divisor],
-                "Frequency": [frequency],
+                "Frequency": [freq(frequency)],
                 "Constraints": [constraints],
                 "Note": [note],
             },
