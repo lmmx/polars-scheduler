@@ -82,29 +82,21 @@ jobs:
               --env CFLAGS_i686_unknown_linux_gnu=-m32
               --env PKG_CONFIG_ALLOW_CROSS=1
               --env PKG_CONFIG_PATH=/usr/lib/pkgconfig:/usr/lib64/pkgconfig
-              --env OPENSSL_DIR=/usr
-              --env ORT_LIB_PROFILE=Release
-              --env ORT_STRATEGY=system
-              --env ORT_PREFER_DYNAMIC_LINK=1
             skip: false
             manylinux: "2_28"
-            # x86 would require dynamic ORT loading and building ONNX runtime from source is
-            # required to achieve that, so for now we cannot support x86 (32-bit)
-            # https://ort.pyke.io/setup/linking#runtime-loading-with-load-dynamic
-            # see: https://github.com/pykeio/ort/issues/245#issuecomment-2253729331
           - runner: ubuntu-22.04
             target: aarch64
             before: |
               sudo apt-get update -y && \
-              sudo apt-get install pkg-config libssl-dev -y
-            dockeropts: --env OPENSSL_DIR=/usr
+              sudo apt-get install pkg-config -y
+            dockeropts: ""
             skip: false
             manylinux: 2_28
           - runner: ubuntu-22.04
             target: armv7
             before: |
               sudo apt-get update -y &&
-              sudo apt-get install -y gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf libssl-dev &&
+              sudo apt-get install -y gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf &&
               mkdir -p polars-scheduler-py/.cargo &&
               cat > polars-scheduler-py/.cargo/config.toml << EOF
               [target.armv7-unknown-linux-gnueabihf]
@@ -118,17 +110,13 @@ jobs:
               --env CXX_armv7_unknown_linux_gnueabihf=arm-linux-gnueabihf-g++
               --env AR_armv7_unknown_linux_gnueabihf=arm-linux-gnueabihf-ar
               --env PKG_CONFIG_ALLOW_CROSS=1
-              --env OPENSSL_DIR=/usr
-              --env ORT_LIB_PROFILE=Release
-              --env ORT_STRATEGY=system
-              --env ORT_PREFER_DYNAMIC_LINK=1
             skip: false
             manylinux: auto
           - runner: ubuntu-22.04
             target: s390x
             before: |
               sudo apt-get update -y &&
-              sudo apt-get install -y gcc-s390x-linux-gnu g++-s390x-linux-gnu libssl-dev &&
+              sudo apt-get install -y gcc-s390x-linux-gnu g++-s390x-linux-gnu &&
               sudo ln -s "$(command -v s390x-linux-gnu-gcc)" /usr/bin/s390x-unknown-linux-gnu-gcc &&
               mkdir -p polars-scheduler-py/.cargo &&
               cat > polars-scheduler-py/.cargo/config.toml << EOF
@@ -144,17 +132,13 @@ jobs:
               --env AR_s390x_unknown_linux_gnu=s390x-linux-gnu-ar
               --env CFLAGS_s390x_unknown_linux_gnu=-march=z10
               --env PKG_CONFIG_ALLOW_CROSS=1
-              --env OPENSSL_DIR=/usr
-              --env ORT_LIB_PROFILE=Release
-              --env ORT_STRATEGY=system
-              --env ORT_PREFER_DYNAMIC_LINK=1
             skip: false
             manylinux: auto
           - runner: ubuntu-22.04
             target: ppc64le
             before: |
               sudo apt-get update -y &&
-              sudo apt-get install -y gcc-powerpc64le-linux-gnu g++-powerpc64le-linux-gnu libssl-dev &&
+              sudo apt-get install -y gcc-powerpc64le-linux-gnu g++-powerpc64le-linux-gnu &&
               sudo ln -s "$(command -v powerpc64le-linux-gnu-gcc)" /usr/bin/powerpc64le-unknown-linux-gnu-gcc &&
               mkdir -p polars-scheduler-py/.cargo &&
               cat > polars-scheduler-py/.cargo/config.toml << EOF
@@ -169,10 +153,6 @@ jobs:
               --env CXX_powerpc64le_unknown_linux_gnu=powerpc64le-linux-gnu-g++
               --env AR_powerpc64le_unknown_linux_gnu=powerpc64le-linux-gnu-ar
               --env PKG_CONFIG_ALLOW_CROSS=1
-              --env OPENSSL_DIR=/usr
-              --env ORT_LIB_PROFILE=Release
-              --env ORT_STRATEGY=system
-              --env ORT_PREFER_DYNAMIC_LINK=1
             skip: false
             manylinux: auto
     steps:
