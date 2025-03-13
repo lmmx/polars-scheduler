@@ -1,5 +1,4 @@
 import polars as pl
-import polars_scheduler  # This registers the 'scheduler' namespace
 
 # Create a new empty schedule
 schedule = pl.DataFrame().scheduler.new()
@@ -103,4 +102,6 @@ result_latest = schedule.scheduler.schedule(
 
 # Print the latest schedule
 print("\n--- Latest Schedule ---")
-print(result_latest.select(["entity_name", "instance", "time_hhmm", "Event", "Category"]))
+print(
+    result_latest.select(["entity_name", "instance", "time_hhmm", "Event", "Category"]),
+)

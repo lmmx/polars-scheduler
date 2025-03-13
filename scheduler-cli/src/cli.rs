@@ -50,23 +50,23 @@ pub fn parse_config_from_args() -> SchedulerConfig {
 fn parse_windows_string(input: &str) -> Result<Vec<WindowSpec>, String> {
     let parts: Vec<_> = input.split(',').map(|p| p.trim()).collect();
     let mut specs = Vec::new();
-    
+
     for part in parts {
         if part.is_empty() {
             continue;
         }
-        
+
         if let Some(idx) = part.find('-') {
             // Range
             let (start_str, end_str) = part.split_at(idx);
             let end_str = &end_str[1..];
             let start_min = parse_hhmm_to_minutes(start_str.trim())?;
             let end_min = parse_hhmm_to_minutes(end_str.trim())?;
-            
+
             if end_min < start_min {
                 return Err(format!("Invalid window range: {}", part));
             }
-            
+
             specs.push(WindowSpec::Range(start_min, end_min));
         } else {
             // Anchor
@@ -74,6 +74,6 @@ fn parse_windows_string(input: &str) -> Result<Vec<WindowSpec>, String> {
             specs.push(WindowSpec::Anchor(anchor));
         }
     }
-    
+
     Ok(specs)
 }

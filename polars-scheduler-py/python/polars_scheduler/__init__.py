@@ -13,6 +13,7 @@ from .utils import parse_into_expr, parse_version
 # Determine the correct plugin path
 if parse_version(pl.__version__) < parse_version("0.20.16"):
     from polars.utils.udfs import _get_shared_lib_location
+
     lib: str | Path = _get_shared_lib_location(__file__)
 else:
     lib = Path(__file__).parent
@@ -41,7 +42,7 @@ def schedule_events(
     strategy: str = "earliest",
     day_start: str = "08:00",
     day_end: str = "22:00",
-    windows: Optional[List[str]] = None,
+    windows: list[str] | None = None,
     debug: bool = False,
 ) -> pl.Expr:
     """
@@ -74,10 +75,10 @@ def schedule_events(
         "day_end": day_end,
         "debug": debug,
     }
-    
+
     if windows is not None:
         kwargs["windows"] = windows
-    
+
     return plug(expr, **kwargs)
 
 
@@ -130,10 +131,10 @@ class SchedulerPlugin:
         """
         if constraints is None:
             constraints = []
-            
+
         if windows is None:
             windows = []
-            
+
         if frequency is None:
             frequency = "1x daily"
 
@@ -171,7 +172,7 @@ class SchedulerPlugin:
         strategy: str = "earliest",
         day_start: str = "08:00",
         day_end: str = "22:00",
-        windows: Optional[List[str]] = None,
+        windows: list[str] | None = None,
         debug: bool = False,
     ) -> pl.DataFrame:
         """
@@ -189,7 +190,7 @@ class SchedulerPlugin:
         """
         # Convert DataFrame to struct column
         struct_col = pl.struct(self._df.get_columns()).alias("events")
-        
+
         # Call the schedule_events function on the struct column
         result = pl.select(
             schedule_events(
@@ -199,19 +200,28 @@ class SchedulerPlugin:
                 day_end=day_end,
                 windows=windows,
                 debug=debug,
-            )
+            ),
         ).unnest("schedule")
-        
+
         # Join with original dataframe for context
-        entity_columns = ["Event", "Category", "Unit", "Amount", "Divisor", 
-                          "Frequency", "Constraints", "Windows", "Note"]
-        
+        entity_columns = [
+            "Event",
+            "Category",
+            "Unit",
+            "Amount",
+            "Divisor",
+            "Frequency",
+            "Constraints",
+            "Windows",
+            "Note",
+        ]
+
         joined = result.join(
             self._df.select(entity_columns),
             left_on="entity_name",
             right_on="Event",
             how="left",
         )
-        
+
         # Return sorted by time
         return joined.sort("time_minutes")

@@ -47,10 +47,10 @@ def parse_version(version: Sequence[str | int]) -> tuple[int, ...]:
 def format_time(minutes: int) -> str:
     """
     Convert minutes since midnight to "HH:MM" format.
-    
+
     Args:
         minutes: Minutes since midnight
-        
+
     Returns:
         Time string in "HH:MM" format
     """
@@ -61,22 +61,22 @@ def format_time(minutes: int) -> str:
 def parse_constraint(constraint: str) -> tuple[str, int, str]:
     """
     Parse a constraint string into its components.
-    
+
     Recognized formats:
     - "≥Xh apart"
     - "≥Xh before CATEGORY"
     - "≥Xh after CATEGORY"
-    
+
     Args:
         constraint: Constraint string
-        
+
     Returns:
         Tuple of (type, hours, reference)
     """
     apart_pattern = r"^≥(\d+)h\s+apart$"
     before_pattern = r"^≥(\d+)h\s+before\s+(.+)$"
     after_pattern = r"^≥(\d+)h\s+after\s+(.+)$"
-    
+
     if match := re.match(apart_pattern, constraint):
         return "apart", int(match.group(1)), ""
     elif match := re.match(before_pattern, constraint):
@@ -90,14 +90,14 @@ def parse_constraint(constraint: str) -> tuple[str, int, str]:
 def parse_window(window: str) -> dict[str, str | int]:
     """
     Parse a window string into its components.
-    
+
     Recognized formats:
     - "HH:MM" (anchor)
     - "HH:MM-HH:MM" (range)
-    
+
     Args:
         window: Window string
-        
+
     Returns:
         Dictionary with window information
     """
@@ -105,41 +105,41 @@ def parse_window(window: str) -> dict[str, str | int]:
         start_str, end_str = window.split("-", 1)
         start_minutes = parse_time(start_str.strip())
         end_minutes = parse_time(end_str.strip())
-        
+
         if end_minutes <= start_minutes:
             raise ValueError(f"Window end time must be after start time: {window}")
-            
+
         return {
             "type": "range",
             "start": start_minutes,
             "end": end_minutes,
-            "display": window
+            "display": window,
         }
     else:
         minutes = parse_time(window.strip())
         return {
             "type": "anchor",
             "time": minutes,
-            "display": window
+            "display": window,
         }
 
 
 def parse_time(time_str: str) -> int:
     """
     Convert "HH:MM" string to minutes since midnight.
-    
+
     Args:
         time_str: Time string in "HH:MM" format
-        
+
     Returns:
         Minutes since midnight (e.g., "08:30" -> 510)
     """
     match = re.match(r"^(\d{1,2}):(\d{2})$", time_str)
     if not match:
         raise ValueError(f"Invalid time format: {time_str}. Expected 'HH:MM'")
-    
+
     hours, minutes = int(match.group(1)), int(match.group(2))
     if not (0 <= hours <= 23 and 0 <= minutes <= 59):
         raise ValueError(f"Time out of range: {time_str}")
-    
+
     return hours * 60 + minutes

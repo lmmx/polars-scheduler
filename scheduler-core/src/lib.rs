@@ -8,7 +8,7 @@ pub use domain::{
     WindowSpec, ConstraintExpr, ConstraintType, ConstraintRef, Frequency
 };
 pub use parse::{
-    parse_from_table, parse_one_constraint, parse_one_window, 
+    parse_from_table, parse_one_constraint, parse_one_window,
     parse_hhmm_to_minutes, format_minutes_to_hhmm
 };
 pub use solver::solve_schedule;
@@ -88,39 +88,39 @@ pub fn create_sample_table() -> Vec<Vec<String>> {
 /// Helper function to print a schedule in a readable format
 pub fn format_schedule(result: &ScheduleResult) -> String {
     let mut output = String::new();
-    
+
     // Format header
     output.push_str("--- SCHEDULE ---\n");
     output.push_str(&format!("Total penalty: {:.1}\n\n", result.total_penalty));
-    
+
     // Format scheduled events
     output.push_str("TIME     | ENTITY              | INSTANCE\n");
     output.push_str("---------+---------------------+---------\n");
-    
+
     for event in &result.scheduled_events {
         let time_str = format_minutes_to_hhmm(event.time_minutes);
-        output.push_str(&format!("{:8} | {:<20} | #{}\n", 
+        output.push_str(&format!("{:8} | {:<20} | #{}\n",
             time_str, event.entity_name, event.instance));
     }
-    
+
     // Format window usage
     if !result.window_usage.is_empty() {
         output.push_str("\n--- WINDOW USAGE ---\n");
         output.push_str("ENTITY              | WINDOW             | USED BY\n");
         output.push_str("--------------------+--------------------+--------\n");
-        
+
         for (entity, window, instances) in &result.window_usage {
             let instances_str = instances
                 .iter()
                 .map(|i| format!("#{}", i))
                 .collect::<Vec<_>>()
                 .join(", ");
-                
-            output.push_str(&format!("{:<20} | {:<20} | {}\n", 
+
+            output.push_str(&format!("{:<20} | {:<20} | {}\n",
                 entity, window, instances_str));
         }
     }
-    
+
     output
 }
 
