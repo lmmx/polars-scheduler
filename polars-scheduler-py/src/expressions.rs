@@ -64,6 +64,10 @@ pub fn schedule_events(inputs: &[Series], kwargs: ScheduleKwargs) -> PolarsResul
         .and_then(|s| s.list().map(|lc| lc.clone()))
         .unwrap_or_else(|_| ListChunked::full_null("Windows".into(), df.len()));
     
+    // Pre-compute null masks for both list columns
+    let constraints_null_mask = constraints_col.is_null();
+    let windows_null_mask = windows_col.is_null();
+    
     // Convert to Entity objects
     let mut entities: Vec<Entity> = Vec::with_capacity(df.len());
     
@@ -84,31 +88,24 @@ pub fn schedule_events(inputs: &[Series], kwargs: ScheduleKwargs) -> PolarsResul
         let constraints = {
             let mut parsed_constraints = Vec::new();
             
-            // Check if we have any constraints at this index
-            if !constraints_col.is_null(i) {
-                // Get the value at this index
-                match constraints_col.get(i) {
-                    Ok(constraint_value) => {
-                        // Convert to a series
-                        if let Some(inner_series) = constraint_value {
-                            // If we have a series, try to cast it to string
-                            if let Ok(str_ca) = inner_series.str() {
-                                for j in 0..str_ca.len() {
-                                    if let Ok(constraint_str) = str_ca.get(j) {
-                                        match parse_one_constraint(constraint_str) {
-                                            Ok(constraint) => parsed_constraints.push(constraint),
-                                            Err(e) => polars_bail!(
-                                                ComputeError: format!("Error parsing constraint '{}': {}", constraint_str, e)
-                                            ),
-                                        }
+            // Check if we have any constraints at this index using the pre-computed mask
+            if !constraints_null_mask.get(i).unwrap_or(true) {
+                if let Ok(av) = constraints_col.get_any_value(i) {
+                    if let AnyValue::List(list_series) = av {
+                        // Now we have a proper Series
+                        if let Ok(string_chunked) = list_series.str() {
+                            for j in 0..string_chunked.len() {
+                                if let Some(constraint_str) = string_chunked.get(j) {
+                                    match parse_one_constraint(constraint_str) {
+                                        Ok(constraint) => parsed_constraints.push(constraint),
+                                        Err(e) => polars_bail!(
+                                            ComputeError: format!("Error parsing constraint '{}': {}", constraint_str, e)
+                                        ),
                                     }
                                 }
                             }
                         }
-                    },
-                    Err(e) => polars_bail!(
-                        ComputeError: format!("Error getting constraint: {}", e)
-                    ),
+                    }
                 }
             }
             
@@ -119,31 +116,24 @@ pub fn schedule_events(inputs: &[Series], kwargs: ScheduleKwargs) -> PolarsResul
         let windows = {
             let mut parsed_windows = Vec::new();
             
-            // Check if we have any windows at this index
-            if !windows_col.is_null(i) {
-                // Get the value at this index
-                match windows_col.get(i) {
-                    Ok(window_value) => {
-                        // Convert to a series
-                        if let Some(inner_series) = window_value {
-                            // If we have a series, try to cast it to string
-                            if let Ok(str_ca) = inner_series.str() {
-                                for j in 0..str_ca.len() {
-                                    if let Ok(window_str) = str_ca.get(j) {
-                                        match parse_one_window(window_str) {
-                                            Ok(window) => parsed_windows.push(window),
-                                            Err(e) => polars_bail!(
-                                                ComputeError: format!("Error parsing window '{}': {}", window_str, e)
-                                            ),
-                                        }
+            // Check if we have any windows at this index using the pre-computed mask
+            if !windows_null_mask.get(i).unwrap_or(true) {
+                if let Ok(av) = windows_col.get_any_value(i) {
+                    if let AnyValue::List(list_series) = av {
+                        // Now we have a proper Series
+                        if let Ok(string_chunked) = list_series.str() {
+                            for j in 0..string_chunked.len() {
+                                if let Some(window_str) = string_chunked.get(j) {
+                                    match parse_one_window(window_str) {
+                                        Ok(window) => parsed_windows.push(window),
+                                        Err(e) => polars_bail!(
+                                            ComputeError: format!("Error parsing window '{}': {}", window_str, e)
+                                        ),
                                     }
                                 }
                             }
                         }
-                    },
-                    Err(e) => polars_bail!(
-                        ComputeError: format!("Error getting window: {}", e)
-                    ),
+                    }
                 }
             }
             
