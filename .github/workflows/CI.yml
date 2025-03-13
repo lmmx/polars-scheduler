@@ -69,14 +69,14 @@ jobs:
               ls -l /usr/bin/i686-linux-gnu-gcc && \
               /usr/bin/i686-linux-gnu-gcc --version && \
               i686-linux-gnu-gcc --version && \
-              mkdir -p rewrite/.cargo && \
-              cat > rewrite/.cargo/config.toml << EOF
+              mkdir -p polars-scheduler-py/.cargo && \
+              cat > polars-scheduler-py/.cargo/config.toml << EOF
               [target.i686-unknown-linux-gnu]
               rustflags = [
                 "-C", "link-arg=-v",
               ]
               EOF
-              cat rewrite/.cargo/config.toml
+              cat polars-scheduler-py/.cargo/config.toml
             dockeropts: >
               --env CC_i686_unknown_linux_gnu=/usr/bin/i686-linux-gnu-gcc
               --env CFLAGS_i686_unknown_linux_gnu=-m32
@@ -108,14 +108,14 @@ jobs:
               sudo apt-get update -y &&
               sudo apt-get install -y gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf libssl-dev &&
               popd &&
-              mkdir -p rewrite/.cargo &&
-              cat > rewrite/.cargo/config.toml << EOF
+              mkdir -p polars-scheduler-py/.cargo &&
+              cat > polars-scheduler-py/.cargo/config.toml << EOF
               [target.armv7-unknown-linux-gnueabihf]
               rustflags = [
                 "-C", "link-arg=-Wl,--verbose",
               ]
               EOF
-              cat rewrite/.cargo/config.toml
+              cat polars-scheduler-py/.cargo/config.toml
             dockeropts: >
               --env CC_armv7_unknown_linux_gnueabihf=arm-linux-gnueabihf-gcc
               --env CXX_armv7_unknown_linux_gnueabihf=arm-linux-gnueabihf-g++
@@ -134,14 +134,14 @@ jobs:
               sudo apt-get update -y &&
               sudo apt-get install -y gcc-s390x-linux-gnu g++-s390x-linux-gnu libssl-dev &&
               sudo ln -s "$(command -v s390x-linux-gnu-gcc)" /usr/bin/s390x-unknown-linux-gnu-gcc &&
-              mkdir -p rewrite/.cargo &&
-              cat > rewrite/.cargo/config.toml << EOF
+              mkdir -p polars-scheduler-py/.cargo &&
+              cat > polars-scheduler-py/.cargo/config.toml << EOF
               [target.s390x-unknown-linux-gnu]
               rustflags = [
                 "-C", "link-arg=-Wl,--verbose",
               ]
               EOF
-              cat rewrite/.cargo/config.toml
+              cat polars-scheduler-py/.cargo/config.toml
             dockeropts: >
               --env CC_s390x_unknown_linux_gnu=s390x-linux-gnu-gcc
               --env CXX_s390x_unknown_linux_gnu=s390x-linux-gnu-g++
@@ -161,14 +161,14 @@ jobs:
               sudo apt-get update -y &&
               sudo apt-get install -y gcc-powerpc64le-linux-gnu g++-powerpc64le-linux-gnu libssl-dev &&
               sudo ln -s "$(command -v powerpc64le-linux-gnu-gcc)" /usr/bin/powerpc64le-unknown-linux-gnu-gcc &&
-              mkdir -p rewrite/.cargo &&
-              cat > rewrite/.cargo/config.toml << EOF
+              mkdir -p polars-scheduler-py/.cargo &&
+              cat > polars-scheduler-py/.cargo/config.toml << EOF
               [target.powerpc64le-unknown-linux-gnu]
               rustflags = [
                 "-C", "link-arg=-Wl,--verbose",
               ]
               EOF
-              cat rewrite/.cargo/config.toml
+              cat polars-scheduler-py/.cargo/config.toml
             dockeropts: >
               --env CC_powerpc64le_unknown_linux_gnu=powerpc64le-linux-gnu-gcc
               --env CXX_powerpc64le_unknown_linux_gnu=powerpc64le-linux-gnu-g++
@@ -191,7 +191,7 @@ jobs:
         if: matrix.platform.skip != true
         with:
           target: ${{ matrix.platform.target }}
-          args: --release --out dist --find-interpreter --manifest-path rewrite/Cargo.toml ${{ matrix.platform.features }}
+          args: --release --out dist --find-interpreter --manifest-path polars-scheduler-py/Cargo.toml ${{ matrix.platform.features }}
           sccache: ${{ !startsWith(github.ref, 'refs/tags/') }}
           manylinux: ${{ matrix.platform.manylinux }}
           before-script-linux: |
@@ -231,7 +231,7 @@ jobs:
         if: matrix.platform.skip != true
         with:
           target: ${{ matrix.platform.target }}
-          args: --release --out dist --find-interpreter --manifest-path rewrite/Cargo.toml ${{ matrix.platform.features }}
+          args: --release --out dist --find-interpreter --manifest-path polars-scheduler-py/Cargo.toml ${{ matrix.platform.features }}
           sccache: ${{ !startsWith(github.ref, 'refs/tags/') }}
       - name: Upload wheels
         uses: actions/upload-artifact@v4
@@ -265,7 +265,7 @@ jobs:
         if: matrix.platform.skip != true
         with:
           target: ${{ matrix.platform.target }}
-          args: --release --out dist --find-interpreter --manifest-path rewrite/Cargo.toml ${{ matrix.platform.features }}
+          args: --release --out dist --find-interpreter --manifest-path polars-scheduler-py/Cargo.toml ${{ matrix.platform.features }}
           sccache: ${{ !startsWith(github.ref, 'refs/tags/') }}
       - name: Upload wheels
         uses: actions/upload-artifact@v4
@@ -283,7 +283,7 @@ jobs:
         uses: PyO3/maturin-action@v1
         with:
           command: sdist
-          args: --out dist --manifest-path rewrite/Cargo.toml
+          args: --out dist --manifest-path polars-scheduler-py/Cargo.toml
       - name: Upload sdist
         uses: actions/upload-artifact@v4
         with:
