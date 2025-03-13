@@ -79,8 +79,8 @@ schedule = schedule.scheduler.add(
     frequency="3x weekly",
 )
 
-# Print the original schedule
-print("--- Original Schedule ---")
+# Print the original schedule constraints
+print("--- Schedule Constraints ---")
 print(schedule)
 
 # Generate an optimized schedule

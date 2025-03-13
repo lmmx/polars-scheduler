@@ -123,7 +123,7 @@ schedule = schedule.scheduler.add(
 )
 
 # Print the original schedule
-print("--- Original Schedule ---")
+print("--- Schedule Constraints ---")
 print(schedule)
 
 # Generate an optimized schedule (Earliest)
@@ -150,7 +150,7 @@ print(result_latest.select(["entity_name", "instance", "time_hhmm", "Category"])
 Example output:
 
 ```
---- Original Schedule ---
+--- Schedule Constraints ---
 shape: (9, 9)
 ┌────────────┬────────────┬─────────┬────────┬───┬───────────┬────────────┬────────────┬───────────┐
 │ Event      ┆ Category   ┆ Unit    ┆ Amount ┆ … ┆ Frequency ┆ Constraint ┆ Windows    ┆ Note      │
