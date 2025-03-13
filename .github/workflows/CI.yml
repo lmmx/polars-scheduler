@@ -52,7 +52,6 @@ jobs:
             before: yum install -y openssl-devel
             dockeropts: ""
             skip: false
-            features: ""
             manylinux: auto
           - runner: ubuntu-22.04
             target: x86
@@ -87,7 +86,6 @@ jobs:
               --env ORT_STRATEGY=system
               --env ORT_PREFER_DYNAMIC_LINK=1
             skip: false
-            features: ""
             manylinux: "2_28"
             # x86 would require dynamic ORT loading and building ONNX runtime from source is
             # required to achieve that, so for now we cannot support x86 (32-bit)
@@ -100,7 +98,6 @@ jobs:
               sudo apt-get install pkg-config libssl-dev -y
             dockeropts: --env OPENSSL_DIR=/usr
             skip: false
-            features: "--features openssl-vendored"
             manylinux: 2_28
           - runner: ubuntu-22.04
             target: armv7
@@ -126,7 +123,6 @@ jobs:
               --env ORT_STRATEGY=system
               --env ORT_PREFER_DYNAMIC_LINK=1
             skip: false
-            features: "--features openssl-vendored"
             manylinux: auto
           - runner: ubuntu-22.04
             target: s390x
@@ -153,7 +149,6 @@ jobs:
               --env ORT_STRATEGY=system
               --env ORT_PREFER_DYNAMIC_LINK=1
             skip: false
-            features: "--features openssl-vendored"
             manylinux: auto
           - runner: ubuntu-22.04
             target: ppc64le
@@ -179,7 +174,6 @@ jobs:
               --env ORT_STRATEGY=system
               --env ORT_PREFER_DYNAMIC_LINK=1
             skip: false
-            features: "--features openssl-vendored"
             manylinux: auto
     steps:
       - uses: actions/checkout@v4
@@ -191,7 +185,7 @@ jobs:
         if: matrix.platform.skip != true
         with:
           target: ${{ matrix.platform.target }}
-          args: --release --out dist --find-interpreter --manifest-path polars-scheduler-py/Cargo.toml ${{ matrix.platform.features }}
+          args: --release --out dist --find-interpreter --manifest-path polars-scheduler-py/Cargo.toml
           sccache: ${{ !startsWith(github.ref, 'refs/tags/') }}
           manylinux: ${{ matrix.platform.manylinux }}
           before-script-linux: |
@@ -214,12 +208,10 @@ jobs:
           - runner: windows-latest
             target: x64
             skip: false
-            features: ""
           # Same ONNX issue as x86 on Linux (see ORT comment above)
           - runner: windows-latest
             target: x86
             skip: true
-            features: ""
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -231,7 +223,7 @@ jobs:
         if: matrix.platform.skip != true
         with:
           target: ${{ matrix.platform.target }}
-          args: --release --out dist --find-interpreter --manifest-path polars-scheduler-py/Cargo.toml ${{ matrix.platform.features }}
+          args: --release --out dist --find-interpreter --manifest-path polars-scheduler-py/Cargo.toml
           sccache: ${{ !startsWith(github.ref, 'refs/tags/') }}
       - name: Upload wheels
         uses: actions/upload-artifact@v4
@@ -250,11 +242,9 @@ jobs:
           - runner: macos-13
             target: x86_64
             skip: false
-            features: ""
           - runner: macos-14
             target: aarch64
             skip: false
-            features: ""
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -265,7 +255,7 @@ jobs:
         if: matrix.platform.skip != true
         with:
           target: ${{ matrix.platform.target }}
-          args: --release --out dist --find-interpreter --manifest-path polars-scheduler-py/Cargo.toml ${{ matrix.platform.features }}
+          args: --release --out dist --find-interpreter --manifest-path polars-scheduler-py/Cargo.toml
           sccache: ${{ !startsWith(github.ref, 'refs/tags/') }}
       - name: Upload wheels
         uses: actions/upload-artifact@v4
