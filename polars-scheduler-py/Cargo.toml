@@ -11,9 +11,11 @@ name = "_polars_scheduler"
 crate-type = ["cdylib"]
 
 [dependencies]
+polars.workspace = true
+pyo3.workspace = true
+pyo3-polars.workspace = true
+polars-arrow.workspace = true
+
 scheduler-core = { path = "../scheduler-core" }
-pyo3 = { workspace = true }
-pyo3-polars = { workspace = true }
-polars = { workspace = true, features = ["dtype-struct"] }
-polars-arrow = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
+arrow2 = { version = "0.18.0", features = ["compute_concatenate"], default-features = false }

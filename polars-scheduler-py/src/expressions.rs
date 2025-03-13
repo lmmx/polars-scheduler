@@ -53,7 +53,7 @@ pub fn schedule_events(inputs: &[Series], kwargs: ScheduleKwargs) -> PolarsResul
     let category_col = df.field_by_name("Category")?.cast(&DataType::String)?;
     let frequency_col = df.field_by_name("Frequency")?.cast(&DataType::String)?;
     
-    // Extract optional columns
+    // Extract optional columns with the correct type
     let constraints_col = df
         .field_by_name("Constraints")
         .and_then(|s| s.list().map(|lc| lc.clone()))
@@ -80,40 +80,56 @@ pub fn schedule_events(inputs: &[Series], kwargs: ScheduleKwargs) -> PolarsResul
         
         let frequency = scheduler_core::Frequency::from_frequency_str(&frequency_str.to_string());
         
-        // Parse constraints
-        let constraints = if let Some(constraint_arr) = constraints_col.get(i) {
+        // Parse constraints - handle list values correctly
+        let constraints = {
             let mut parsed_constraints = Vec::new();
-            for j in 0..constraint_arr.len() {
-                if let Some(constraint_str) = constraint_arr.get_str(j) {
-                    match parse_one_constraint(constraint_str) {
-                        Ok(constraint) => parsed_constraints.push(constraint),
-                        Err(e) => polars_bail!(
-                            ComputeError: format!("Error parsing constraint '{}': {}", constraint_str, e)
-                        ),
+            
+            // Handle the nested Result<Option<...>> properly
+            if let Ok(maybe_list) = constraints_col.get(i) {
+                if let Some(inner_series) = maybe_list {
+                    // If we have a series, try to get string values
+                    if let Ok(str_ca) = inner_series.str() {
+                        for j in 0..str_ca.len() {
+                            if let Ok(constraint_str) = str_ca.get(j) {
+                                match parse_one_constraint(constraint_str) {
+                                    Ok(constraint) => parsed_constraints.push(constraint),
+                                    Err(e) => polars_bail!(
+                                        ComputeError: format!("Error parsing constraint '{}': {}", constraint_str, e)
+                                    ),
+                                }
+                            }
+                        }
                     }
                 }
             }
+            
             parsed_constraints
-        } else {
-            Vec::new()
         };
         
-        // Parse windows
-        let windows = if let Some(window_arr) = windows_col.get(i) {
+        // Parse windows - use the same approach
+        let windows = {
             let mut parsed_windows = Vec::new();
-            for j in 0..window_arr.len() {
-                if let Some(window_str) = window_arr.get_str(j) {
-                    match parse_one_window(window_str) {
-                        Ok(window) => parsed_windows.push(window),
-                        Err(e) => polars_bail!(
-                            ComputeError: format!("Error parsing window '{}': {}", window_str, e)
-                        ),
+            
+            // Handle the nested Result<Option<...>> properly
+            if let Ok(maybe_list) = windows_col.get(i) {
+                if let Some(inner_series) = maybe_list {
+                    // If we have a series, try to get string values
+                    if let Ok(str_ca) = inner_series.str() {
+                        for j in 0..str_ca.len() {
+                            if let Ok(window_str) = str_ca.get(j) {
+                                match parse_one_window(window_str) {
+                                    Ok(window) => parsed_windows.push(window),
+                                    Err(e) => polars_bail!(
+                                        ComputeError: format!("Error parsing window '{}': {}", window_str, e)
+                                    ),
+                                }
+                            }
+                        }
                     }
                 }
             }
+            
             parsed_windows
-        } else {
-            Vec::new()
         };
         
         // Create Entity
@@ -208,16 +224,20 @@ pub fn schedule_events(inputs: &[Series], kwargs: ScheduleKwargs) -> PolarsResul
         .map(|e| format_minutes_to_hhmm(e.time_minutes))
         .collect();
     
-    // Create result struct array
+    // Create individual series with proper into() for string literals
+    let entity_series = Series::new("entity_name".into(), entity_names);
+    let instance_series = Series::new("instance".into(), instances);
+    let time_minutes_series = Series::new("time_minutes".into(), time_minutes);
+    let time_hhmm_series = Series::new("time_hhmm".into(), time_hhmm);
+    
+    // Create fields vector
     let fields = vec![
-        Series::new("entity_name".into(), entity_names),
-        Series::new("instance".into(), instances),
-        Series::new("time_minutes".into(), time_minutes),
-        Series::new("time_hhmm".into(), time_hhmm),
+        entity_series,
+        instance_series,
+        time_minutes_series,
+        time_hhmm_series,
     ];
     
-    StructChunked::new("schedule", &fields)
-        .map_err(|e| PolarsError::ComputeError(format!("Error creating result struct: {}", e).into()))?
-        .into_series()
-        .pipe(Ok)
+    // Create the struct series directly using the Series::struct_ method
+    Series::struct_(&fields)
 }
