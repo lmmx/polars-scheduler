@@ -1400,6 +1400,7 @@ dependencies = [
  "pyo3",
  "pyo3-polars",
  "scheduler-core",
+ "serde",
 ]
 
 [[package]]

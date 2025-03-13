@@ -42,7 +42,7 @@ schedule = schedule.scheduler.add(
     category="medication",
     unit="pill",
     frequency="2x daily",
-    constraints=["≥6h apart", "≥1h before meal"],
+    constraints=["≥6h apart", "≥1h before food"],
 )
 
 schedule = schedule.scheduler.add(
@@ -69,7 +69,7 @@ schedule = schedule.scheduler.add(
     category="supplement",
     unit="shot",
     frequency="1x daily",
-    constraints=["before breakfast"],
+    constraints=["≥1h before breakfast"],
 )
 
 schedule = schedule.scheduler.add(
@@ -91,8 +91,8 @@ result = schedule.scheduler.schedule(
 )
 
 # Print the optimized schedule
-print("\n--- Optimized Schedule ---")
-print(result.select(["Event", "Instance", "TimeHHMM"]))
+print("\n--- Optimized Schedule (Earliest) ---")
+print(result.select(["entity_name", "instance", "time_hhmm", "Event", "Category"]))
 
 # Try a "latest" schedule
 result_latest = schedule.scheduler.schedule(
@@ -101,6 +101,6 @@ result_latest = schedule.scheduler.schedule(
     day_end="22:00",
 )
 
-# Print the optimized schedule
+# Print the latest schedule
 print("\n--- Latest Schedule ---")
-print(result_latest.select(["Event", "Instance", "TimeHHMM"]))
+print(result_latest.select(["entity_name", "instance", "time_hhmm", "Event", "Category"]))

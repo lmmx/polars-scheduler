@@ -1,15 +1,86 @@
 from __future__ import annotations
 
+import inspect
 from pathlib import Path
 from typing import Optional, List, Union, Literal
 
 import polars as pl
 from polars.api import register_dataframe_namespace
-from polars_scheduler._polars_scheduler import schedule_dataframe
+from polars.plugins import register_plugin_function
 
-__all__ = ["schedule_dataframe"]
+from .utils import parse_into_expr, parse_version
 
-# Register the DataFrame namespace extension
+# Determine the correct plugin path
+if parse_version(pl.__version__) < parse_version("0.20.16"):
+    from polars.utils.udfs import _get_shared_lib_location
+    lib: str | Path = _get_shared_lib_location(__file__)
+else:
+    lib = Path(__file__).parent
+
+__all__ = ["schedule_events"]
+
+
+def plug(expr: pl.Expr, **kwargs) -> pl.Expr:
+    """
+    Wrap Polars' `register_plugin_function` helper to always
+    pass the same `lib` (the directory where _polars_scheduler.so/pyd lives).
+    """
+    func_name = inspect.stack()[1].function
+    return register_plugin_function(
+        plugin_path=lib,
+        function_name=func_name,
+        args=expr,
+        is_elementwise=True,
+        kwargs=kwargs,
+    )
+
+
+def schedule_events(
+    expr: pl.Expr,
+    *,
+    strategy: str = "earliest",
+    day_start: str = "08:00",
+    day_end: str = "22:00",
+    windows: Optional[List[str]] = None,
+    debug: bool = False,
+) -> pl.Expr:
+    """
+    Schedule events based on the constraints in a DataFrame.
+    Calls the Rust `schedule_events` function from `_polars_scheduler`.
+
+    Parameters
+    ----------
+    expr : pl.Expr
+        Expression representing a struct column containing the event definitions
+    strategy : str, default "earliest"
+        Scheduling strategy, either "earliest" or "latest"
+    day_start : str, default "08:00"
+        Start of day in "HH:MM" format
+    day_end : str, default "22:00"
+        End of day in "HH:MM" format
+    windows : List[str], optional
+        Global time windows in "HH:MM" or "HH:MM-HH:MM" format
+    debug : bool, default False
+        Whether to print debug information
+
+    Returns
+    -------
+    pl.Expr
+        Expression representing the scheduled events
+    """
+    kwargs = {
+        "strategy": strategy,
+        "day_start": day_start,
+        "day_end": day_end,
+        "debug": debug,
+    }
+    
+    if windows is not None:
+        kwargs["windows"] = windows
+    
+    return plug(expr, **kwargs)
+
+
 @register_dataframe_namespace("scheduler")
 class SchedulerPlugin:
     def __init__(self, df: pl.DataFrame):
@@ -116,43 +187,31 @@ class SchedulerPlugin:
         Returns:
             A DataFrame with the scheduled events
         """
-        # Call the Rust function
-        result = schedule_dataframe(
-            self._df,
-            strategy=strategy,
-            day_start=day_start,
-            day_end=day_end,
-            windows=windows,
-            debug=debug,
-        )
+        # Convert DataFrame to struct column
+        struct_col = pl.struct(self._df.get_columns()).alias("events")
         
-        # Join with original dataframe to keep all columns
-        joined = self._df.join(
-            result,
-            left_on="Event",
+        # Call the schedule_events function on the struct column
+        result = pl.select(
+            schedule_events(
+                struct_col,
+                strategy=strategy,
+                day_start=day_start,
+                day_end=day_end,
+                windows=windows,
+                debug=debug,
+            )
+        ).unnest("schedule")
+        
+        # Join with original dataframe for context
+        entity_columns = ["Event", "Category", "Unit", "Amount", "Divisor", 
+                          "Frequency", "Constraints", "Windows", "Note"]
+        
+        joined = result.join(
+            self._df.select(entity_columns),
+            left_on="entity_name",
             right_on="Event",
             how="left",
         )
         
-        return joined.sort("TimeMinutes")
-
-def validate_frequency(frequency: str) -> bool:
-    """
-    Validate that a frequency string is in the correct format.
-    Examples: "1x daily", "2x daily", "3x weekly"
-    """
-    parts = frequency.lower().split()
-    if len(parts) != 2:
-        return False
-        
-    # Check first part is like "1x" or "2x"
-    if not parts[0].endswith("x"):
-        return False
-    try:
-        int(parts[0][:-1])
-    except ValueError:
-        return False
-        
-    # Check second part is a valid period
-    valid_periods = ["daily", "weekly", "monthly", "yearly"]
-    return parts[1] in valid_periods
+        # Return sorted by time
+        return joined.sort("time_minutes")
