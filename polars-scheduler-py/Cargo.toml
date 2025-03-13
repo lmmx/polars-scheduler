@@ -1,0 +1,20 @@
+[dependencies]
+scheduler-core = {path = "../scheduler-core"}
+serde = {workspace = true, features = ["derive"]}
+arrow2 = {version = "0.18.0", features = ["compute_concatenate"], default-features = false}
+polars.workspace = true
+polars-arrow.workspace = true
+pyo3.workspace = true
+pyo3-polars.workspace = true
+
+[lib]
+name = "_polars_scheduler"
+crate-type = ["cdylib"]
+
+[package]
+name = "polars-scheduler-py"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+authors = ["Louis Maddox <louismmx@gmail.com>"]
+description = "Polars plugin for scheduling events with constraints"

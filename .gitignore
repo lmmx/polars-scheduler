@@ -12,3 +12,7 @@ wheels/
 *.swp
 
 confidential*
+
+target/
+
+*.so

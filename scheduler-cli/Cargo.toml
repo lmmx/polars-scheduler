@@ -1,0 +1,11 @@
+[dependencies]
+scheduler-core = {path = "../scheduler-core"}
+colored = {workspace = true}
+
+[package]
+name = "scheduler-cli"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+authors = ["Louis Maddox <louismmx@gmail.com>"]
+description = "Command-line interface for the scheduler"

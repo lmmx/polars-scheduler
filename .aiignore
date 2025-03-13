@@ -1,0 +1,8 @@
+.aiignore
+.gitignore
+.git/
+.venv/
+target/
+*_cache/
+*.lock
+*.so
