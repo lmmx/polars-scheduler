@@ -1,0 +1,13 @@
+[package]
+name = "scheduler-core"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+authors = ["Louis Maddox <louismmx@gmail.com>"]
+description = "Core library for scheduling events with constraints"
+
+[dependencies]
+good_lp = { workspace = true }
+regex = { workspace = true }
+serde = { workspace = true }
+clock-zones = { workspace = true }
