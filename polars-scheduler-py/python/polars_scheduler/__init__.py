@@ -200,7 +200,7 @@ class SchedulerPlugin:
                 windows=windows,
                 debug=debug,
             ),
-        ).unnest("schedule")
+        ).unnest("events")
 
         # Join with original dataframe for context
         entity_columns = [

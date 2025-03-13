@@ -217,7 +217,7 @@ pub fn schedule_events(inputs: &[Series], kwargs: ScheduleKwargs) -> PolarsResul
 
     // Prepare result arrays
     let entity_names: Vec<_> = result.scheduled_events.iter()
-        .map(|e| e.entity_name.clone())
+        .map(|e| e.entity_name.trim_matches('"'))
         .collect();
 
     let instances: Vec<_> = result.scheduled_events.iter()

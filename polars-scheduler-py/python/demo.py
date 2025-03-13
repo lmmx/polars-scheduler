@@ -1,4 +1,5 @@
 import polars as pl
+import polars_scheduler  # noqa: F401
 
 # Create a new empty schedule
 schedule = pl.DataFrame().scheduler.new()
@@ -58,7 +59,7 @@ schedule = schedule.scheduler.add(
     unit="gram",
     amount=30,
     frequency="1x daily",
-    constraints=["≥30m after gym OR with breakfast"],
+    constraints=[],  # ["≥30m after gym OR with breakfast"],
     windows=["08:00", "17:00-19:00"],
     note="mix with 300ml water",
 )
@@ -91,7 +92,7 @@ result = schedule.scheduler.schedule(
 
 # Print the optimized schedule
 print("\n--- Optimized Schedule (Earliest) ---")
-print(result.select(["entity_name", "instance", "time_hhmm", "Event", "Category"]))
+print(result.select(["entity_name", "instance", "time_hhmm", "Category"]))
 
 # Try a "latest" schedule
 result_latest = schedule.scheduler.schedule(
@@ -103,5 +104,5 @@ result_latest = schedule.scheduler.schedule(
 # Print the latest schedule
 print("\n--- Latest Schedule ---")
 print(
-    result_latest.select(["entity_name", "instance", "time_hhmm", "Event", "Category"]),
+    result_latest.select(["entity_name", "instance", "time_hhmm", "Category"]),
 )
