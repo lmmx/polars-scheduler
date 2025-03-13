@@ -18,3 +18,11 @@ edition = "2021"
 license = "MIT"
 authors = ["Louis Maddox <louismmx@gmail.com>"]
 description = "Polars plugin for scheduling events with constraints"
+
+[profile.release]
+opt-level = 2
+lto = "thin"
+codegen-units = 1
+panic = "abort"
+debug = false
+strip = "symbols"
