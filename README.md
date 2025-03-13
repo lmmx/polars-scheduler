@@ -226,9 +226,9 @@ shape: (12, 4)
 
 The scheduler supports several constraint types:
 
-- **Apart constraint**: `"≥6h apart"` - Ensures that multiple instances of the same entity are scheduled at least 6 hours apart  
-- **Before constraint**: `"≥1h before food"` - Ensures that an entity is scheduled at least 1 hour before any entity in the "food" category  
-- **After constraint**: `"≥2h after medication"` - Ensures that an entity is scheduled at least 2 hours after any entity in the "medication" category  
+- **Apart constraint**: `"≥6h apart"` - Ensures that multiple instances of the same entity are scheduled at least 6 hours apart
+- **Before constraint**: `"≥1h before food"` - Ensures that an entity is scheduled at least 1 hour before any entity in the "food" category
+- **After constraint**: `"≥2h after medication"` - Ensures that an entity is scheduled at least 2 hours after any entity in the "medication" category
 
 When both "before" and "after" constraints are specified for the same entity-category pair, they are combined as an "OR" constraint using a big-M formulation, not an "AND" constraint (which would often be impossible to satisfy).
 
@@ -236,15 +236,15 @@ When both "before" and "after" constraints are specified for the same entity-cat
 
 Windows can be specified in two formats:
 
-- **Anchor**: `"08:00"` - A specific time point  
-- **Range**: `"18:00-20:00"` - A time range  
+- **Anchor**: `"08:00"` - A specific time point
+- **Range**: `"18:00-20:00"` - A time range
 
 When multiple instances of the same entity need to be scheduled, the solver will try to distribute them across different windows.
 
 ## Optimization Strategies
 
-- **Earliest**: Places events as early as possible while satisfying all constraints  
-- **Latest**: Places events as late as possible while satisfying all constraints  
+- **Earliest**: Places events as early as possible while satisfying all constraints
+- **Latest**: Places events as late as possible while satisfying all constraints
 
 ## Standalone CLI Tool
 
