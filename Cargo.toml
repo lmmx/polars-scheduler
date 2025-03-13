@@ -1,3 +1,11 @@
+[profile.release]
+opt-level = 2
+lto = "thin"
+codegen-units = 1
+panic = "abort"
+debug = false
+strip = "symbols"
+
 [workspace]
 members = [
   "scheduler-core",
@@ -24,11 +32,3 @@ version = "0.1.0"
 edition = "2021"
 authors = ["Louis Maddox <louismmx@gmail.com>"]
 license = "MIT"
-
-[profile.release]
-opt-level = 2
-lto = "thin"
-codegen-units = 1
-panic = "abort"
-debug = false
-strip = "symbols"
