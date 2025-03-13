@@ -14,3 +14,5 @@ wheels/
 confidential*
 
 target/
+
+*.so
