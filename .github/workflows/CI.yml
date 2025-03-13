@@ -49,43 +49,11 @@ jobs:
         platform:
           - runner: ubuntu-22.04
             target: x86_64
-            before: yum install -y openssl-devel
             dockeropts: ""
             skip: false
             manylinux: auto
           - runner: ubuntu-22.04
             target: x86
-            before: |
-              python3 -m ensurepip && \
-              yum install \
-                openssl-devel.i686 \
-                pkg-config \
-                glibc-devel.i686 \
-                libstdc++-devel.i686 \
-                gcc-toolset-14-libstdc++-devel.i686 \
-                -y && \
-              which gcc && \
-              ln -s $(which gcc) /usr/bin/i686-linux-gnu-gcc && \
-              ls -l /usr/bin/i686-linux-gnu-gcc && \
-              /usr/bin/i686-linux-gnu-gcc --version && \
-              i686-linux-gnu-gcc --version && \
-              mkdir -p polars-scheduler-py/.cargo && \
-              cat > polars-scheduler-py/.cargo/config.toml << EOF
-              [target.i686-unknown-linux-gnu]
-              rustflags = [
-                "-C", "link-arg=-v",
-              ]
-              EOF
-              cat polars-scheduler-py/.cargo/config.toml
-            dockeropts: >
-              --env CC_i686_unknown_linux_gnu=/usr/bin/i686-linux-gnu-gcc
-              --env CFLAGS_i686_unknown_linux_gnu=-m32
-              --env PKG_CONFIG_ALLOW_CROSS=1
-              --env PKG_CONFIG_PATH=/usr/lib/pkgconfig:/usr/lib64/pkgconfig
-              --env OPENSSL_DIR=/usr
-              --env ORT_LIB_PROFILE=Release
-              --env ORT_STRATEGY=system
-              --env ORT_PREFER_DYNAMIC_LINK=1
             skip: false
             manylinux: "2_28"
             # x86 would require dynamic ORT loading and building ONNX runtime from source is
@@ -94,85 +62,19 @@ jobs:
             # see: https://github.com/pykeio/ort/issues/245#issuecomment-2253729331
           - runner: ubuntu-22.04
             target: aarch64
-            before: |
-              sudo apt-get update -y && \
-              sudo apt-get install pkg-config libssl-dev -y
             dockeropts: --env OPENSSL_DIR=/usr
             skip: false
             manylinux: 2_28
           - runner: ubuntu-22.04
             target: armv7
-            before: |
-              sudo apt-get update -y &&
-              sudo apt-get install -y gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf libssl-dev &&
-              mkdir -p polars-scheduler-py/.cargo &&
-              cat > polars-scheduler-py/.cargo/config.toml << EOF
-              [target.armv7-unknown-linux-gnueabihf]
-              rustflags = [
-                "-C", "link-arg=-Wl,--verbose",
-              ]
-              EOF
-              cat polars-scheduler-py/.cargo/config.toml
-            dockeropts: >
-              --env CC_armv7_unknown_linux_gnueabihf=arm-linux-gnueabihf-gcc
-              --env CXX_armv7_unknown_linux_gnueabihf=arm-linux-gnueabihf-g++
-              --env AR_armv7_unknown_linux_gnueabihf=arm-linux-gnueabihf-ar
-              --env PKG_CONFIG_ALLOW_CROSS=1
-              --env OPENSSL_DIR=/usr
-              --env ORT_LIB_PROFILE=Release
-              --env ORT_STRATEGY=system
-              --env ORT_PREFER_DYNAMIC_LINK=1
             skip: false
             manylinux: auto
           - runner: ubuntu-22.04
             target: s390x
-            before: |
-              sudo apt-get update -y &&
-              sudo apt-get install -y gcc-s390x-linux-gnu g++-s390x-linux-gnu libssl-dev &&
-              sudo ln -s "$(command -v s390x-linux-gnu-gcc)" /usr/bin/s390x-unknown-linux-gnu-gcc &&
-              mkdir -p polars-scheduler-py/.cargo &&
-              cat > polars-scheduler-py/.cargo/config.toml << EOF
-              [target.s390x-unknown-linux-gnu]
-              rustflags = [
-                "-C", "link-arg=-Wl,--verbose",
-              ]
-              EOF
-              cat polars-scheduler-py/.cargo/config.toml
-            dockeropts: >
-              --env CC_s390x_unknown_linux_gnu=s390x-linux-gnu-gcc
-              --env CXX_s390x_unknown_linux_gnu=s390x-linux-gnu-g++
-              --env AR_s390x_unknown_linux_gnu=s390x-linux-gnu-ar
-              --env CFLAGS_s390x_unknown_linux_gnu=-march=z10
-              --env PKG_CONFIG_ALLOW_CROSS=1
-              --env OPENSSL_DIR=/usr
-              --env ORT_LIB_PROFILE=Release
-              --env ORT_STRATEGY=system
-              --env ORT_PREFER_DYNAMIC_LINK=1
             skip: false
             manylinux: auto
           - runner: ubuntu-22.04
             target: ppc64le
-            before: |
-              sudo apt-get update -y &&
-              sudo apt-get install -y gcc-powerpc64le-linux-gnu g++-powerpc64le-linux-gnu libssl-dev &&
-              sudo ln -s "$(command -v powerpc64le-linux-gnu-gcc)" /usr/bin/powerpc64le-unknown-linux-gnu-gcc &&
-              mkdir -p polars-scheduler-py/.cargo &&
-              cat > polars-scheduler-py/.cargo/config.toml << EOF
-              [target.powerpc64le-unknown-linux-gnu]
-              rustflags = [
-                "-C", "link-arg=-Wl,--verbose",
-              ]
-              EOF
-              cat polars-scheduler-py/.cargo/config.toml
-            dockeropts: >
-              --env CC_powerpc64le_unknown_linux_gnu=powerpc64le-linux-gnu-gcc
-              --env CXX_powerpc64le_unknown_linux_gnu=powerpc64le-linux-gnu-g++
-              --env AR_powerpc64le_unknown_linux_gnu=powerpc64le-linux-gnu-ar
-              --env PKG_CONFIG_ALLOW_CROSS=1
-              --env OPENSSL_DIR=/usr
-              --env ORT_LIB_PROFILE=Release
-              --env ORT_STRATEGY=system
-              --env ORT_PREFER_DYNAMIC_LINK=1
             skip: false
             manylinux: auto
     steps:
@@ -188,9 +90,6 @@ jobs:
           args: --release --out dist --find-interpreter --manifest-path polars-scheduler-py/Cargo.toml
           sccache: ${{ !startsWith(github.ref, 'refs/tags/') }}
           manylinux: ${{ matrix.platform.manylinux }}
-          before-script-linux: |
-            ${{ matrix.platform.before }}
-          docker-options: ${{ matrix.platform.dockeropts }}
       - name: Upload wheels
         uses: actions/upload-artifact@v4
         if: matrix.platform.skip != true
