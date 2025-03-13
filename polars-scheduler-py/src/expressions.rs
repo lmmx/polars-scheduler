@@ -26,7 +26,7 @@ pub struct ScheduleKwargs {
 }
 
 /// Computes output type for the expression
-fn schedule_output_type(input_fields: &[Field]) -> PolarsResult<Field> {
+fn schedule_output_type(_input_fields: &[Field]) -> PolarsResult<Field> {
     // We'll return a struct array with scheduled times for each event/instance
     Ok(Field::new("schedule".into(), DataType::Struct(vec![
         Field::new("entity_name".into(), DataType::String),
@@ -70,15 +70,15 @@ pub fn schedule_events(inputs: &[Series], kwargs: ScheduleKwargs) -> PolarsResul
     for i in 0..df.len() {
         // Extract basic fields
         let event = event_col.get(i)
-            .or_else(|| PolarsError::ComputeError("Missing event name".into()))?;
+            .or_else(|_| Err(PolarsError::ComputeError("Missing event name".into())))?;
         
         let category = category_col.get(i)
-            .or_else(|| PolarsError::ComputeError("Missing category".into()))?;
+            .or_else(|_| Err(PolarsError::ComputeError("Missing category".into())))?;
         
         let frequency_str = frequency_col.get(i)
-            .or_else(|| PolarsError::ComputeError("Missing frequency".into()))?;
+            .or_else(|_| Err(PolarsError::ComputeError("Missing frequency".into())))?;
         
-        let frequency = scheduler_core::Frequency::from_frequency_str(frequency_str);
+        let frequency = scheduler_core::Frequency::from_frequency_str(&frequency_str.to_string());
         
         // Parse constraints
         let constraints = if let Some(constraint_arr) = constraints_col.get(i) {
