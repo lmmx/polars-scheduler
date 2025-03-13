@@ -36,6 +36,8 @@ polars-lts-cpu = [
   "polars-lts-cpu>=1.21.0"
 ]
 dev = [
+  "pdm-bump>=0.9.10",
+  "pdm>=2.22.3",
   "pre-commit>=4.1.0",
   "pytest>=8.3.4"
 ]
