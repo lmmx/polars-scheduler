@@ -80,52 +80,70 @@ pub fn schedule_events(inputs: &[Series], kwargs: ScheduleKwargs) -> PolarsResul
         
         let frequency = scheduler_core::Frequency::from_frequency_str(&frequency_str.to_string());
         
-        // Parse constraints - handle list values correctly
+        // Parse constraints using a simpler approach
         let constraints = {
             let mut parsed_constraints = Vec::new();
             
-            // Handle the nested Result<Option<...>> properly
-            if let Ok(maybe_list) = constraints_col.get(i) {
-                if let Some(inner_series) = maybe_list {
-                    // If we have a series, try to get string values
-                    if let Ok(str_ca) = inner_series.str() {
-                        for j in 0..str_ca.len() {
-                            if let Ok(constraint_str) = str_ca.get(j) {
-                                match parse_one_constraint(constraint_str) {
-                                    Ok(constraint) => parsed_constraints.push(constraint),
-                                    Err(e) => polars_bail!(
-                                        ComputeError: format!("Error parsing constraint '{}': {}", constraint_str, e)
-                                    ),
+            // Check if we have any constraints at this index
+            if !constraints_col.is_null(i) {
+                // Get the value at this index
+                match constraints_col.get(i) {
+                    Ok(constraint_value) => {
+                        // Convert to a series
+                        if let Some(inner_series) = constraint_value {
+                            // If we have a series, try to cast it to string
+                            if let Ok(str_ca) = inner_series.str() {
+                                for j in 0..str_ca.len() {
+                                    if let Ok(constraint_str) = str_ca.get(j) {
+                                        match parse_one_constraint(constraint_str) {
+                                            Ok(constraint) => parsed_constraints.push(constraint),
+                                            Err(e) => polars_bail!(
+                                                ComputeError: format!("Error parsing constraint '{}': {}", constraint_str, e)
+                                            ),
+                                        }
+                                    }
                                 }
                             }
                         }
-                    }
+                    },
+                    Err(e) => polars_bail!(
+                        ComputeError: format!("Error getting constraint: {}", e)
+                    ),
                 }
             }
             
             parsed_constraints
         };
         
-        // Parse windows - use the same approach
+        // Parse windows using same approach
         let windows = {
             let mut parsed_windows = Vec::new();
             
-            // Handle the nested Result<Option<...>> properly
-            if let Ok(maybe_list) = windows_col.get(i) {
-                if let Some(inner_series) = maybe_list {
-                    // If we have a series, try to get string values
-                    if let Ok(str_ca) = inner_series.str() {
-                        for j in 0..str_ca.len() {
-                            if let Ok(window_str) = str_ca.get(j) {
-                                match parse_one_window(window_str) {
-                                    Ok(window) => parsed_windows.push(window),
-                                    Err(e) => polars_bail!(
-                                        ComputeError: format!("Error parsing window '{}': {}", window_str, e)
-                                    ),
+            // Check if we have any windows at this index
+            if !windows_col.is_null(i) {
+                // Get the value at this index
+                match windows_col.get(i) {
+                    Ok(window_value) => {
+                        // Convert to a series
+                        if let Some(inner_series) = window_value {
+                            // If we have a series, try to cast it to string
+                            if let Ok(str_ca) = inner_series.str() {
+                                for j in 0..str_ca.len() {
+                                    if let Ok(window_str) = str_ca.get(j) {
+                                        match parse_one_window(window_str) {
+                                            Ok(window) => parsed_windows.push(window),
+                                            Err(e) => polars_bail!(
+                                                ComputeError: format!("Error parsing window '{}': {}", window_str, e)
+                                            ),
+                                        }
+                                    }
                                 }
                             }
                         }
-                    }
+                    },
+                    Err(e) => polars_bail!(
+                        ComputeError: format!("Error getting window: {}", e)
+                    ),
                 }
             }
             
@@ -230,14 +248,22 @@ pub fn schedule_events(inputs: &[Series], kwargs: ScheduleKwargs) -> PolarsResul
     let time_minutes_series = Series::new("time_minutes".into(), time_minutes);
     let time_hhmm_series = Series::new("time_hhmm".into(), time_hhmm);
     
-    // Create fields vector
-    let fields = vec![
+    // Create field series and determine output length
+    let field_series = vec![
         entity_series,
         instance_series,
         time_minutes_series,
         time_hhmm_series,
     ];
     
-    // Create the struct series directly using the Series::struct_ method
-    Series::struct_(&fields)
+    // Calculate result length (all fields should have the same length)
+    let len = if field_series.is_empty() {
+        0
+    } else {
+        field_series[0].len()
+    };
+    
+    // Use the cleaner StructChunked::from_series approach from the official plugin guide
+    StructChunked::from_series("schedule".into(), len, field_series.iter())
+        .map(|ca| ca.into_series())
 }
