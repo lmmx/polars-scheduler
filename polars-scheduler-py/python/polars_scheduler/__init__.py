@@ -2,13 +2,12 @@ from __future__ import annotations
 
 import inspect
 from pathlib import Path
-from typing import Optional, List, Union, Literal
 
 import polars as pl
 from polars.api import register_dataframe_namespace
 from polars.plugins import register_plugin_function
 
-from .utils import parse_into_expr, parse_version
+from .utils import parse_into_expr, parse_version  # noqa: F401
 
 # Determine the correct plugin path
 if parse_version(pl.__version__) < parse_version("0.20.16"):
