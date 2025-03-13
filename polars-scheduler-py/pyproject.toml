@@ -4,7 +4,7 @@ build-backend = "maturin"
 
 [project]
 name = "polars-scheduler"
-version = "0.1.1"
+version = "0.2.0"
 description = "A Polars plugin for easily scheduling recurring events with constraints."
 readme = "../README.md"
 authors = [
