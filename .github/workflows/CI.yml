@@ -56,6 +56,7 @@ jobs:
           - runner: ubuntu-22.04
             target: x86
             before: |
+              python3 -m ensurepip && \
               yum install \
                 openssl-devel.i686 \
                 pkg-config \
