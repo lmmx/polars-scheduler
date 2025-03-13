@@ -280,4 +280,3 @@ To build the project:
 ## License
 
 MIT License
-```
