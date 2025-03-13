@@ -485,7 +485,7 @@ pub fn solve_schedule(
 
     // Extract solution and organize for result
     let mut scheduled_events = Vec::new();
-    for (_cid, cv) in &clock_map {
+    for cv in clock_map.values() {
         let val = sol.value(cv.var);
         let minutes = val.round() as i32;
         scheduled_events.push(ScheduledEvent {

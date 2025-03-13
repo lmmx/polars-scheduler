@@ -38,7 +38,7 @@ pub fn parse_from_table(rows: Vec<Vec<String>>) -> Result<Vec<Entity>, String> {
                 "" | "[]" => Vec::new(),
                 _ => re
                     .captures_iter(constraints_str)
-                    .map(|cap| parse_one_constraint(&cap[1].trim()))
+                    .map(|cap| parse_one_constraint(cap[1].trim()))
                     .collect::<Result<Vec<_>, _>>()?,
             };
 
@@ -48,7 +48,7 @@ pub fn parse_from_table(rows: Vec<Vec<String>>) -> Result<Vec<Entity>, String> {
                 "" | "[]" => Vec::new(),
                 _ => re
                     .captures_iter(windows_str)
-                    .map(|cap| parse_one_window(&cap[1].trim()))
+                    .map(|cap| parse_one_window(cap[1].trim()))
                     .collect::<Result<Vec<_>, _>>()?,
             };
 
