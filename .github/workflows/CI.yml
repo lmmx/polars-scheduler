@@ -208,10 +208,9 @@ jobs:
           - runner: windows-latest
             target: x64
             skip: false
-          # Same ONNX issue as x86 on Linux (see ORT comment above)
           - runner: windows-latest
             target: x86
-            skip: true
+            skip: false
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
