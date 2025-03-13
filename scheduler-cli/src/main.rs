@@ -1,20 +1,23 @@
 mod cli;
 
-use std::time::Instant;
-use colored::Colorize;
-use scheduler_core::{
-    parse_from_table, create_sample_table, format_schedule,
-    ScheduleStrategy, solve_schedule
-};
 use crate::cli::parse_config_from_args;
+use colored::Colorize;
+use scheduler_core::{create_sample_table, format_schedule, parse_from_table, solve_schedule};
+use std::time::Instant;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let start_time = Instant::now();
 
     // Parse command-line arguments
     let config = parse_config_from_args();
-    println!("{}", format!("Using day window: {}..{} (in minutes)", 
-        config.day_start_minutes, config.day_end_minutes).yellow());
+    println!(
+        "{}",
+        format!(
+            "Using day window: {}..{} (in minutes)",
+            config.day_start_minutes, config.day_end_minutes
+        )
+        .yellow()
+    );
     println!("{}", format!("Strategy: {:?}", config.strategy).yellow());
 
     // Parse sample table data
@@ -23,14 +26,19 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     println!("{}", "Entities loaded:".green());
     for e in &entities {
-        println!("  - {} ({}x daily) with {} constraints and {} windows", 
-            e.name, e.frequency.instances_per_day(), e.constraints.len(), e.windows.len());
+        println!(
+            "  - {} ({}x daily) with {} constraints and {} windows",
+            e.name,
+            e.frequency.instances_per_day(),
+            e.constraints.len(),
+            e.windows.len()
+        );
     }
 
     // Solve the schedule
     println!("{}", "\nSolving schedule...".green());
     let debug_enabled = std::env::args().any(|a| a == "--debug");
-    
+
     let result = solve_schedule(entities, config, debug_enabled)
         .map_err(|e| format!("Solver error: {}", e))?;
 
