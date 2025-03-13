@@ -1,5 +1,5 @@
 use good_lp::variable::Variable;
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum ConstraintType {
@@ -31,7 +31,7 @@ pub enum Frequency {
 }
 
 impl Frequency {
-    pub fn from_str(s: &str) -> Self {
+    pub fn from_frequency_str(s: &str) -> Self {
         let lower = s.to_lowercase();
         match () {
             _ if lower.contains("3x") => Self::ThreeTimesDaily,
@@ -90,7 +90,7 @@ pub fn c2str(c: &ClockVar) -> String {
 // Results returned by the scheduler
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ScheduledEvent {
-    pub entity_name: String,  
+    pub entity_name: String,
     pub instance: usize,
     pub time_minutes: i32,
 }
@@ -111,8 +111,8 @@ pub enum ScheduleStrategy {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SchedulerConfig {
-    pub day_start_minutes: i32,  
-    pub day_end_minutes: i32,    
+    pub day_start_minutes: i32,
+    pub day_end_minutes: i32,
     pub strategy: ScheduleStrategy,
     pub global_windows: Vec<WindowSpec>,
     pub penalty_weight: f64,

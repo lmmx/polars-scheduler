@@ -56,7 +56,7 @@ pub fn parse_from_table(rows: Vec<Vec<String>>) -> Result<Vec<Entity>, String> {
             Ok(Entity {
                 name: row[0].to_string(),
                 category: row[1].to_string(),
-                frequency: Frequency::from_str(&row[5]),
+                frequency: Frequency::from_frequency_str(&row[5]),
                 constraints: cexprs,
                 windows: wspecs,
             })
