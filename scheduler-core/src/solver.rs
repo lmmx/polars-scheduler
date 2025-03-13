@@ -1,32 +1,33 @@
-use std::collections::{HashMap, HashSet};
 use good_lp::{
-    variables, variable, constraint, default_solver,
-    SolverModel, Solution, Expression, Constraint, Variable
+    constraint, default_solver, variable, variables, Constraint, Expression, Solution, SolverModel,
+    Variable,
 };
+use std::collections::{HashMap, HashSet};
 
 use crate::domain::{
-    Entity, SchedulerConfig, ScheduleStrategy, ScheduleResult, ScheduledEvent,
-    ClockVar, ConstraintType, ConstraintRef, c2str, WindowSpec
+    c2str, ClockVar, ConstraintRef, ConstraintType, Entity, ScheduleResult, ScheduleStrategy,
+    ScheduledEvent, SchedulerConfig, WindowSpec,
 };
 use crate::parse;
 
 // Custom structure to track penalty variables for better reporting
 struct PenaltyVar {
-    entity_name: String,
-    instance: usize,
+    // entity_name: String,
+    // instance: usize,
     var: Variable,
 }
 
 /// Main scheduling function that takes entities and config, returns optimized schedule
 pub fn solve_schedule(
-    entities: Vec<Entity>, 
+    entities: Vec<Entity>,
     config: SchedulerConfig,
-    debug_enabled: bool
+    debug_enabled: bool,
 ) -> Result<ScheduleResult, String> {
     // Build category->entities map
     let mut category_map = HashMap::new();
     for e in &entities {
-        category_map.entry(e.category.clone())
+        category_map
+            .entry(e.category.clone())
             .or_insert_with(HashSet::new)
             .insert(e.name.clone());
     }
@@ -37,18 +38,18 @@ pub fn solve_schedule(
     for e in &entities {
         let count = e.frequency.instances_per_day();
         for i in 0..count {
-            let cname = format!("{}_{}", e.name, i+1);
-            let var = builder
-                .add(variable()
+            let cname = format!("{}_{}", e.name, i + 1);
+            let var = builder.add(
+                variable()
                     .integer()
                     .min(config.day_start_minutes as f64)
-                    .max(config.day_end_minutes as f64)
-                );
+                    .max(config.day_end_minutes as f64),
+            );
             clock_map.insert(
                 cname,
                 ClockVar {
                     entity_name: e.name.clone(),
-                    instance: i+1,
+                    instance: i + 1,
                     var,
                 },
             );
@@ -58,10 +59,19 @@ pub fn solve_schedule(
     // We collect constraints here
     let mut constraints = Vec::new();
 
+    // Add constraint debug helper
+    let mut add_constraint = |desc: &str, c: Constraint| {
+        if debug_enabled {
+            eprintln!("DEBUG => {desc}");
+        }
+        constraints.push(c);
+    };
+
     // Make a map: entity -> [its clockvars]
     let mut entity_clocks: HashMap<String, Vec<ClockVar>> = HashMap::new();
     for cv in clock_map.values() {
-        entity_clocks.entry(cv.entity_name.clone())
+        entity_clocks
+            .entry(cv.entity_name.clone())
             .or_default()
             .push(cv.clone());
     }
@@ -131,14 +141,6 @@ pub fn solve_schedule(
             }
         }
 
-        // Add constraint debug helper
-        let mut add_constraint = |desc: &str, c: Constraint| {
-            if debug_enabled {
-                eprintln!("DEBUG => {desc}");
-            }
-            constraints.push(c);
-        };
-
         // (a) "apart" for consecutive instances
         for tv in apart_intervals {
             for w in eclocks.windows(2) {
@@ -155,17 +157,24 @@ pub fn solve_schedule(
             for c_e in eclocks {
                 for c_r in &rvars {
                     let b = builder.add(variable().binary());
-                    let d1 = format!("(ApartFrom) {} - {} >= {} - bigM*(1-b)",
-                        c2str(c_r), c2str(c_e), tv);
-                    add_constraint(&d1,
-                        constraint!(c_r.var - c_e.var >= tv - big_m*(1.0 - b))
+                    let d1 = format!(
+                        "(ApartFrom) {} - {} >= {} - bigM*(1-b)",
+                        c2str(c_r),
+                        c2str(c_e),
+                        tv
+                    );
+                    add_constraint(
+                        &d1,
+                        constraint!(c_r.var - c_e.var >= tv - big_m * (1.0 - b)),
                     );
 
-                    let d2 = format!("(ApartFrom) {} - {} >= {} - bigM*b",
-                        c2str(c_e), c2str(c_r), tv);
-                    add_constraint(&d2,
-                        constraint!(c_e.var - c_r.var >= tv - big_m*b)
+                    let d2 = format!(
+                        "(ApartFrom) {} - {} >= {} - bigM*b",
+                        c2str(c_e),
+                        c2str(c_r),
+                        tv
                     );
+                    add_constraint(&d2, constraint!(c_e.var - c_r.var >= tv - big_m * b));
                 }
             }
         }
@@ -179,17 +188,24 @@ pub fn solve_schedule(
                     for c_e in eclocks {
                         for c_r in &rvars {
                             let b = builder.add(variable().binary());
-                            let d1 = format!("(Before|After) {} - {} >= {} - M*(1-b)",
-                                c2str(c_r), c2str(c_e), bv);
-                            add_constraint(&d1,
-                                constraint!(c_r.var - c_e.var >= bv - big_m*(1.0 - b))
+                            let d1 = format!(
+                                "(Before|After) {} - {} >= {} - M*(1-b)",
+                                c2str(c_r),
+                                c2str(c_e),
+                                bv
+                            );
+                            add_constraint(
+                                &d1,
+                                constraint!(c_r.var - c_e.var >= bv - big_m * (1.0 - b)),
                             );
 
-                            let d2 = format!("(Before|After) {} - {} >= {} - M*b",
-                                c2str(c_e), c2str(c_r), av);
-                            add_constraint(&d2,
-                                constraint!(c_e.var - c_r.var >= av - big_m*b)
+                            let d2 = format!(
+                                "(Before|After) {} - {} >= {} - M*b",
+                                c2str(c_e),
+                                c2str(c_r),
+                                av
                             );
+                            add_constraint(&d2, constraint!(c_e.var - c_r.var >= av - big_m * b));
                         }
                     }
                 }
@@ -198,9 +214,7 @@ pub fn solve_schedule(
                     for c_e in eclocks {
                         for c_r in &rvars {
                             let d = format!("(Before) {} - {} >= {}", c2str(c_r), c2str(c_e), bv);
-                            add_constraint(&d,
-                                constraint!(c_r.var - c_e.var >= bv)
-                            );
+                            add_constraint(&d, constraint!(c_r.var - c_e.var >= bv));
                         }
                     }
                 }
@@ -209,9 +223,7 @@ pub fn solve_schedule(
                     for c_e in eclocks {
                         for c_r in &rvars {
                             let d = format!("(After) {} - {} >= {}", c2str(c_e), c2str(c_r), av);
-                            add_constraint(&d,
-                                constraint!(c_e.var - c_r.var >= av)
-                            );
+                            add_constraint(&d, constraint!(c_e.var - c_r.var >= av));
                         }
                     }
                 }
@@ -225,7 +237,10 @@ pub fn solve_schedule(
     let alpha = config.penalty_weight;
 
     if debug_enabled {
-        eprintln!("--- Creating soft window penalty constraints (α = {}) ---", alpha);
+        eprintln!(
+            "--- Creating soft window penalty constraints (α = {}) ---",
+            alpha
+        );
     }
 
     // Track penalty variables for better reporting
@@ -261,8 +276,8 @@ pub fn solve_schedule(
 
             // Store penalty info for reporting
             penalty_vars.push(PenaltyVar {
-                entity_name: e.name.clone(),
-                instance: cv.instance,
+                // entity_name: e.name.clone(),
+                // instance: cv.instance,
                 var: p_i,
             });
 
@@ -281,20 +296,24 @@ pub fn solve_schedule(
 
                     // If dist_iw <= use_threshold then window_use_var = 1
                     // Using big-M: dist_iw <= use_threshold + M*(1-window_use_var)
-                    let desc = format!("(WinUse) {}_{} uses win{} if dist <= {}",
-                                 e.name, cv.instance, w_idx, use_threshold);
+                    let desc = format!(
+                        "(WinUse) {}_{} uses win{} if dist <= {}",
+                        e.name, cv.instance, w_idx, use_threshold
+                    );
                     add_constraint(
                         &desc,
-                        constraint!(dist_iw <= use_threshold + big_m*(1.0 - window_use_var))
+                        constraint!(dist_iw <= use_threshold + big_m * (1.0 - window_use_var)),
                     );
 
                     // If dist_iw > use_threshold then window_use_var = 0
                     // Using big-M: dist_iw >= use_threshold - M*window_use_var
-                    let desc = format!("(WinUse) {}_{} doesn't use win{} if dist > {}",
-                                 e.name, cv.instance, w_idx, use_threshold);
+                    let desc = format!(
+                        "(WinUse) {}_{} doesn't use win{} if dist > {}",
+                        e.name, cv.instance, w_idx, use_threshold
+                    );
                     add_constraint(
                         &desc,
-                        constraint!(dist_iw >= use_threshold - big_m*window_use_var)
+                        constraint!(dist_iw >= use_threshold - big_m * window_use_var),
                     );
                 }
 
@@ -302,48 +321,52 @@ pub fn solve_schedule(
                     WindowSpec::Anchor(a) => {
                         // For anchors: |t_i - a| represented with two constraints
                         // dist_iw >= t_i - a
-                        let desc = format!("(Win+) dist_{}_w{} >= {} - {}", 
-                            cv.instance, w_idx, c2str(cv), a);
-                        add_constraint(
-                            &desc,
-                            constraint!(dist_iw >= cv.var - (*a as f64))
+                        let desc = format!(
+                            "(Win+) dist_{}_w{} >= {} - {}",
+                            cv.instance,
+                            w_idx,
+                            c2str(cv),
+                            a
                         );
+                        add_constraint(&desc, constraint!(dist_iw >= cv.var - (*a as f64)));
 
                         // dist_iw >= a - t_i
-                        let desc = format!("(Win-) dist_{}_w{} >= {} - {}", 
-                            cv.instance, w_idx, a, c2str(cv));
-                        add_constraint(
-                            &desc,
-                            constraint!(dist_iw >= (*a as f64) - cv.var)
+                        let desc = format!(
+                            "(Win-) dist_{}_w{} >= {} - {}",
+                            cv.instance,
+                            w_idx,
+                            a,
+                            c2str(cv)
                         );
-                    },
+                        add_constraint(&desc, constraint!(dist_iw >= (*a as f64) - cv.var));
+                    }
                     WindowSpec::Range(start, end) => {
                         // For ranges: 0 if inside, distance to closest edge if outside
                         // dist_iw >= start - t_i (if t_i < start)
-                        let desc = format!("(WinS) dist_{}_w{} >= {} - {}", 
-                            cv.instance, w_idx, start, c2str(cv));
-                        add_constraint(
-                            &desc,
-                            constraint!(dist_iw >= (*start as f64) - cv.var)
+                        let desc = format!(
+                            "(WinS) dist_{}_w{} >= {} - {}",
+                            cv.instance,
+                            w_idx,
+                            start,
+                            c2str(cv)
                         );
+                        add_constraint(&desc, constraint!(dist_iw >= (*start as f64) - cv.var));
 
                         // dist_iw >= t_i - end (if t_i > end)
-                        let desc = format!("(WinE) dist_{}_w{} >= {} - {}", 
-                            cv.instance, w_idx, c2str(cv), end);
-                        add_constraint(
-                            &desc,
-                            constraint!(dist_iw >= cv.var - (*end as f64))
+                        let desc = format!(
+                            "(WinE) dist_{}_w{} >= {} - {}",
+                            cv.instance,
+                            w_idx,
+                            c2str(cv),
+                            end
                         );
+                        add_constraint(&desc, constraint!(dist_iw >= cv.var - (*end as f64)));
                     }
                 }
 
                 // p_i <= dist_iw => p_i will be minimum distance to any window
-                let desc = format!("(Win) p_{} <= dist_{}_w{}", 
-                    cv.instance, cv.instance, w_idx);
-                add_constraint(
-                    &desc,
-                    constraint!(p_i <= dist_iw)
-                );
+                let desc = format!("(Win) p_{} <= dist_{}_w{}", cv.instance, cv.instance, w_idx);
+                add_constraint(&desc, constraint!(p_i <= dist_iw));
             }
         }
 
@@ -361,13 +384,17 @@ pub fn solve_schedule(
 
     for (ename, instance_window_map) in &window_usage_vars {
         let eclocks = entity_clocks.get(ename).unwrap();
-        let window_count = entities.iter()
+        let window_count = entities
+            .iter()
             .find(|e| &e.name == ename)
             .map(|e| e.windows.len())
             .unwrap_or(0);
 
         if debug_enabled {
-            eprintln!("Entity '{}': ensuring distribution across {} windows", ename, window_count);
+            eprintln!(
+                "Entity '{}': ensuring distribution across {} windows",
+                ename, window_count
+            );
         }
 
         // Each instance must use exactly one window
@@ -379,12 +406,11 @@ pub fn solve_schedule(
                 }
             }
 
-            let desc = format!("(Dist) {}_instance{} must use exactly one window", 
-                ename, cv.instance);
-            add_constraint(
-                &desc,
-                constraint!(sum_expr == 1.0)
+            let desc = format!(
+                "(Dist) {}_instance{} must use exactly one window",
+                ename, cv.instance
             );
+            add_constraint(&desc, constraint!(sum_expr == 1.0));
         }
 
         // Each window can be used at most once
@@ -397,12 +423,8 @@ pub fn solve_schedule(
                 }
             }
 
-            let desc = format!("(Dist) {}_window{} can be used at most once", 
-                ename, w_idx);
-            add_constraint(
-                &desc,
-                constraint!(sum_expr <= 1.0)
-            );
+            let desc = format!("(Dist) {}_window{} can be used at most once", ename, w_idx);
+            add_constraint(&desc, constraint!(sum_expr <= 1.0));
         }
     }
 
@@ -433,16 +455,18 @@ pub fn solve_schedule(
             if debug_enabled {
                 eprintln!("Objective: minimize(sum(t_i) + {} * sum(p_i))", alpha);
             }
-            builder.minimise(sum_expr + alpha * penalty_expr)
-                   .using(default_solver)
+            builder
+                .minimise(sum_expr + alpha * penalty_expr)
+                .using(default_solver)
         }
         ScheduleStrategy::Latest => {
             if debug_enabled {
                 eprintln!("Objective: maximize(sum(t_i) - {} * sum(p_i))", alpha);
             }
             // Equivalent to minimize(-sum_expr + alpha * penalty_expr)
-            builder.minimise(Expression::from(0.0) - sum_expr + alpha * penalty_expr)
-                   .using(default_solver)
+            builder
+                .minimise(Expression::from(0.0) - sum_expr + alpha * penalty_expr)
+                .using(default_solver)
         }
     };
 
@@ -461,7 +485,7 @@ pub fn solve_schedule(
 
     // Extract solution and organize for result
     let mut scheduled_events = Vec::new();
-    for (cid, cv) in &clock_map {
+    for (_cid, cv) in &clock_map {
         let val = sol.value(cv.var);
         let minutes = val.round() as i32;
         scheduled_events.push(ScheduledEvent {
@@ -489,9 +513,11 @@ pub fn solve_schedule(
             let window_desc = match &e.windows[w_idx] {
                 WindowSpec::Anchor(anchor) => parse::format_minutes_to_hhmm(*anchor),
                 WindowSpec::Range(start, end) => {
-                    format!("{}-{}", 
+                    format!(
+                        "{}-{}",
                         parse::format_minutes_to_hhmm(*start),
-                        parse::format_minutes_to_hhmm(*end))
+                        parse::format_minutes_to_hhmm(*end)
+                    )
                 }
             };
 

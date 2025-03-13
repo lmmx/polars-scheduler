@@ -4,6 +4,7 @@ members = [
     "scheduler-cli",
     "polars-scheduler-py",
 ]
+resolver = "2"
 
 [workspace.package]
 version = "0.1.0"

@@ -1,6 +1,5 @@
 use crate::domain::{
-    Entity, Frequency, ConstraintExpr, ConstraintType, ConstraintRef,
-    WindowSpec,
+    ConstraintExpr, ConstraintRef, ConstraintType, Entity, Frequency, WindowInfo, WindowSpec,
 };
 use regex::Regex;
 
@@ -47,11 +46,10 @@ pub fn parse_from_table(rows: Vec<Vec<String>>) -> Result<Vec<Entity>, String> {
             let windows_str = row[7].trim();
             let wspecs = match windows_str {
                 "" | "[]" => Vec::new(),
-                _ => {
-                    re.captures_iter(windows_str)
-                        .map(|cap| parse_one_window(&cap[1].trim()))
-                        .collect::<Result<Vec<_>, _>>()?
-                }
+                _ => re
+                    .captures_iter(windows_str)
+                    .map(|cap| parse_one_window(&cap[1].trim()))
+                    .collect::<Result<Vec<_>, _>>()?,
             };
 
             // (3) build the entity
@@ -74,10 +72,14 @@ pub fn parse_from_table(rows: Vec<Vec<String>>) -> Result<Vec<Entity>, String> {
 ///   - cref = ConstraintRef::WithinGroup (since "apart" was recognized)
 pub fn parse_one_constraint(s: &str) -> Result<ConstraintExpr, String> {
     let patterns = &[
-        (r"^≥(\d+)h\s+apart$",              ConstraintType::Apart,     true),
-        (r"^≥(\d+)h\s+before\s+(.+)$",      ConstraintType::Before,    false),
-        (r"^≥(\d+)h\s+after\s+(.+)$",       ConstraintType::After,     false),
-        (r"^≥(\d+)h\s+apart\s+from\s+(.+)$",ConstraintType::ApartFrom, false),
+        (r"^≥(\d+)h\s+apart$", ConstraintType::Apart, true),
+        (r"^≥(\d+)h\s+before\s+(.+)$", ConstraintType::Before, false),
+        (r"^≥(\d+)h\s+after\s+(.+)$", ConstraintType::After, false),
+        (
+            r"^≥(\d+)h\s+apart\s+from\s+(.+)$",
+            ConstraintType::ApartFrom,
+            false,
+        ),
     ];
 
     patterns
@@ -110,12 +112,9 @@ pub fn parse_one_window(s: &str) -> Result<WindowSpec, String> {
         let end_str = &end_str[1..];
 
         let start_min = parse_hhmm_to_minutes(start_str.trim())?;
-        let end_min   = parse_hhmm_to_minutes(end_str.trim())?;
+        let end_min = parse_hhmm_to_minutes(end_str.trim())?;
         if end_min < start_min {
-            return Err(format!(
-                "Window range is reversed or invalid: {}",
-                s
-            ));
+            return Err(format!("Window range is reversed or invalid: {}", s));
         }
         Ok(WindowSpec::Range(start_min, end_min))
     } else {
@@ -131,8 +130,12 @@ pub fn parse_hhmm_to_minutes(hhmm: &str) -> Result<i32, String> {
     if parts.len() != 2 {
         return Err(format!("Not in HH:MM format: {}", hhmm));
     }
-    let hour: i32 = parts[0].parse().map_err(|_| format!("Bad hour: {}", parts[0]))?;
-    let min:  i32 = parts[1].parse().map_err(|_| format!("Bad minute: {}", parts[1]))?;
+    let hour: i32 = parts[0]
+        .parse()
+        .map_err(|_| format!("Bad hour: {}", parts[0]))?;
+    let min: i32 = parts[1]
+        .parse()
+        .map_err(|_| format!("Bad minute: {}", parts[1]))?;
 
     if !(0..=23).contains(&hour) || !(0..=59).contains(&min) {
         return Err(format!("Time out of valid range: {}", hhmm));
@@ -179,7 +182,7 @@ pub fn parse_windows_string(input: &str) -> Result<Vec<WindowSpec>, String> {
 /// Create window descriptions for better reporting
 pub fn create_window_info_map(entities: &[Entity]) -> Vec<WindowInfo> {
     use crate::domain::WindowInfo;
-    
+
     let mut result = Vec::new();
 
     for e in entities {
@@ -193,17 +196,19 @@ pub fn create_window_info_map(entities: &[Entity]) -> Vec<WindowInfo> {
                     let hh = a / 60;
                     let mm = a % 60;
                     format!("{:02}:{:02}", hh, mm)
-                },
+                }
                 WindowSpec::Range(start, end) => {
                     let start_hh = start / 60;
                     let start_mm = start % 60;
                     let end_hh = end / 60;
                     let end_mm = end % 60;
-                    format!("{:02}:{:02}-{:02}:{:02}",
-                           start_hh, start_mm, end_hh, end_mm)
-                },
+                    format!(
+                        "{:02}:{:02}-{:02}:{:02}",
+                        start_hh, start_mm, end_hh, end_mm
+                    )
+                }
             };
-            
+
             result.push(WindowInfo {
                 entity_name: e.name.clone(),
                 window_index: idx,
