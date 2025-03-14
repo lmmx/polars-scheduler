@@ -217,6 +217,7 @@ pub fn schedule_events(inputs: &[Series], kwargs: ScheduleKwargs) -> PolarsResul
         strategy,
         global_windows,
         penalty_weight: 0.3,
+        window_tolerance: 0.0,
     };
 
     // Solve the schedule

@@ -1,8 +1,5 @@
+use scheduler_core::{parse_hhmm_to_minutes, ScheduleStrategy, SchedulerConfig, WindowSpec};
 use std::env;
-use scheduler_core::{
-    SchedulerConfig, ScheduleStrategy, WindowSpec,
-    parse_hhmm_to_minutes
-};
 
 pub fn parse_config_from_args() -> SchedulerConfig {
     let args: Vec<String> = env::args().collect();
@@ -14,7 +11,10 @@ pub fn parse_config_from_args() -> SchedulerConfig {
             .find_map(|arg| arg.strip_prefix(prefix))
             .and_then(|time_str| time_str.split_once(':'))
             .and_then(|(h_str, m_str)| {
-                h_str.parse::<i32>().ok().zip(m_str.parse::<i32>().ok())
+                h_str
+                    .parse::<i32>()
+                    .ok()
+                    .zip(m_str.parse::<i32>().ok())
                     .map(|(h, m)| *minutes = h * 60 + m)
             });
     };
@@ -29,17 +29,23 @@ pub fn parse_config_from_args() -> SchedulerConfig {
     // 3) Global windows: e.g. --windows=08:00,12:00-13:00,18:00
     if let Some(win_arg) = args.iter().find(|a| a.starts_with("--windows=")) {
         let raw = &win_arg["--windows=".len()..];
-        config.global_windows = parse_windows_string(raw)
-            .unwrap_or_else(|e| {
-                eprintln!("Warning: could not parse windows from '{}': {}", raw, e);
-                Vec::new()
-            });
+        config.global_windows = parse_windows_string(raw).unwrap_or_else(|e| {
+            eprintln!("Warning: could not parse windows from '{}': {}", raw, e);
+            Vec::new()
+        });
     }
 
     // 4) Penalty weight
     if let Some(weight_arg) = args.iter().find(|a| a.starts_with("--penalty=")) {
         if let Ok(weight) = weight_arg["--penalty=".len()..].parse::<f64>() {
             config.penalty_weight = weight;
+        }
+    }
+
+    // 5) Window tolerance
+    if let Some(win_tol_arg) = args.iter().find(|a| a.starts_with("--tolerance=")) {
+        if let Ok(win_tol) = weight_arg["--tolerance=".len()..].parse::<f64>() {
+            config.window_tolerance = win_tol;
         }
     }
 
