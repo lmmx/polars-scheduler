@@ -47,7 +47,7 @@ Homepage = "https://github.com/lmmx/polars-scheduler"
 Repository = "https://github.com/lmmx/polars-scheduler.git"
 
 [tool.uv]
-# Uncomment to build Rust code in development mode
+# Build Rust code in development mode (faster builds)
 config-settings = { build-args = "--profile=dev" }
 
 [tool.maturin]

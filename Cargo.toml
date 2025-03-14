@@ -4,7 +4,7 @@ lto = false
 codegen-units = 256
 panic = "abort"
 debug = false
-strip = "none"
+strip = "debuginfo"
 
 [profile.release]
 opt-level = 2
