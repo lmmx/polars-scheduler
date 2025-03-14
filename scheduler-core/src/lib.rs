@@ -4,86 +4,14 @@ pub mod solver;
 
 // Re-export commonly used items for easier access
 pub use domain::{
-    Entity, SchedulerConfig, ScheduleStrategy, ScheduleResult, ScheduledEvent,
-    WindowSpec, ConstraintExpr, ConstraintType, ConstraintRef, Frequency
+    ConstraintExpr, ConstraintRef, ConstraintType, Entity, Frequency, ScheduleResult,
+    ScheduleStrategy, ScheduledEvent, SchedulerConfig, WindowSpec,
 };
 pub use parse::{
-    parse_from_table, parse_one_constraint, parse_one_window,
-    parse_hhmm_to_minutes, format_minutes_to_hhmm
+    format_minutes_to_hhmm, parse_from_table, parse_hhmm_to_minutes, parse_one_constraint,
+    parse_one_window,
 };
 pub use solver::solve_schedule;
-
-/// Creates a sample table for testing and demonstration purposes
-pub fn create_sample_table() -> Vec<Vec<String>> {
-    vec![
-        vec![
-            "Entity".to_string(),
-            "Category".to_string(),
-            "Unit".to_string(),
-            "Amount".to_string(),
-            "Split".to_string(),
-            "Frequency".to_string(),
-            "Constraints".to_string(),
-            "Windows".to_string(),
-            "Note".to_string(),
-        ],
-        vec![
-            "Antepsin".to_string(),
-            "med".to_string(),
-            "tablet".to_string(),
-            "null".to_string(),
-            "3".to_string(),
-            "3x daily".to_string(),
-            "[\"≥6h apart\", \"≥1h before food\", \"≥2h after food\"]".to_string(),
-            "[]".to_string(), // no windows
-            "in 1tsp water".to_string(),
-        ],
-        vec![
-            "Gabapentin".to_string(),
-            "med".to_string(),
-            "ml".to_string(),
-            "1.8".to_string(),
-            "null".to_string(),
-            "2x daily".to_string(),
-            "[\"≥8h apart\"]".to_string(),
-            "[]".to_string(),
-            "null".to_string(),
-        ],
-        vec![
-            "Pardale".to_string(),
-            "med".to_string(),
-            "tablet".to_string(),
-            "null".to_string(),
-            "2".to_string(),
-            "2x daily".to_string(),
-            "[\"≥8h apart\"]".to_string(),
-            "[]".to_string(),
-            "null".to_string(),
-        ],
-        vec![
-            "Pro-Kolin".to_string(),
-            "med".to_string(),
-            "ml".to_string(),
-            "3.0".to_string(),
-            "null".to_string(),
-            "2x daily".to_string(),
-            "[]".to_string(),
-            "[]".to_string(),
-            "with food".to_string(),
-        ],
-        vec![
-            "Chicken and rice".to_string(),
-            "food".to_string(),
-            "meal".to_string(),
-            "null".to_string(),
-            "null".to_string(),
-            "2x daily".to_string(),
-            "[]".to_string(),               // no 'apart' constraints
-            "[\"08:00\", \"18:00-20:00\"]".to_string(), // has 1 anchor & 1 range
-            "some note".to_string(),
-        ],
-    ]
-}
 
 /// Helper function to print a schedule in a readable format
 pub fn format_schedule(result: &ScheduleResult) -> String {
@@ -99,8 +27,10 @@ pub fn format_schedule(result: &ScheduleResult) -> String {
 
     for event in &result.scheduled_events {
         let time_str = format_minutes_to_hhmm(event.time_minutes);
-        output.push_str(&format!("{:8} | {:<20} | #{}\n",
-            time_str, event.entity_name, event.instance));
+        output.push_str(&format!(
+            "{:8} | {:<20} | #{}\n",
+            time_str, event.entity_name, event.instance
+        ));
     }
 
     // Format window usage
@@ -116,8 +46,10 @@ pub fn format_schedule(result: &ScheduleResult) -> String {
                 .collect::<Vec<_>>()
                 .join(", ");
 
-            output.push_str(&format!("{:<20} | {:<20} | {}\n",
-                entity, window, instances_str));
+            output.push_str(&format!(
+                "{:<20} | {:<20} | {}\n",
+                entity, window, instances_str
+            ));
         }
     }
 
@@ -128,7 +60,7 @@ pub fn format_schedule(result: &ScheduleResult) -> String {
 pub fn run_scheduler(
     entities: Vec<Entity>,
     config: SchedulerConfig,
-    debug: bool
+    debug: bool,
 ) -> Result<ScheduleResult, String> {
     solve_schedule(entities, config, debug)
 }
@@ -138,25 +70,26 @@ pub fn default_config() -> SchedulerConfig {
     SchedulerConfig::default()
 }
 
-/// Run the scheduler with sample data and default configuration
-pub fn run_sample_schedule(strategy: ScheduleStrategy, debug: bool) -> Result<ScheduleResult, String> {
-    let table = create_sample_table();
-    let entities = parse_from_table(table)?;
-    let mut config = default_config();
-    config.strategy = strategy;
-    run_scheduler(entities, config, debug)
-}
-
 /// Convert a list of constraints represented as strings into ConstraintExpr objects
 pub fn parse_constraints(constraints: &[String]) -> Result<Vec<ConstraintExpr>, String> {
-    constraints.iter()
+    constraints
+        .iter()
         .map(|s| parse_one_constraint(s))
         .collect()
 }
 
 /// Convert a list of window specifications as strings into WindowSpec objects
 pub fn parse_windows(windows: &[String]) -> Result<Vec<WindowSpec>, String> {
-    windows.iter()
-        .map(|s| parse_one_window(s))
-        .collect()
+    windows.iter().map(|s| parse_one_window(s)).collect()
+}
+
+/// Run the scheduler withprovided entities and specified configuration strategy
+pub fn run_schedule_with_stratey(
+    entities: Vec<Entity>,
+    strategy: ScheduleStrategy,
+    debug: bool,
+) -> Result<ScheduleResult, String> {
+    let mut config = default_config();
+    config.strategy = strategy;
+    run_scheduler(entities, config, debug)
 }

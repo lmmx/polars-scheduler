@@ -1,8 +1,10 @@
 mod cli;
+mod data;
 
 use crate::cli::parse_config_from_args;
+use crate::data::create_sample_table;
 use colored::Colorize;
-use scheduler_core::{create_sample_table, format_schedule, parse_from_table, solve_schedule};
+use scheduler_core::{format_schedule, parse_from_table, solve_schedule};
 use std::time::Instant;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
