@@ -1,6 +1,6 @@
 import polars as pl
 import polars_scheduler  # noqa: F401
-from polars_scheduler import SchedulerPlugin
+from polars_scheduler import Scheduler
 
 
 def test_namespace_existence():
@@ -50,7 +50,7 @@ def test_direct_construction():
     )
 
     # Create scheduler directly
-    scheduler = SchedulerPlugin(df)
+    scheduler = Scheduler(df)
     result = scheduler.schedule()
 
     # Should have expected output

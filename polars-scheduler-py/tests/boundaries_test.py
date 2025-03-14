@@ -1,5 +1,5 @@
 import polars as pl
-from polars_scheduler import SchedulerPlugin
+from polars_scheduler import Scheduler
 
 
 def test_day_boundaries():
@@ -18,7 +18,7 @@ def test_day_boundaries():
         },
     )
 
-    scheduler = SchedulerPlugin(df)
+    scheduler = Scheduler(df)
 
     # With earliest strategy, should be at day_start
     result = scheduler.schedule(strategy="earliest", day_start="09:00", day_end="21:00")

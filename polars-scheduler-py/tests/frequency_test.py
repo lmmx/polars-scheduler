@@ -1,6 +1,6 @@
 import polars as pl
 import pytest
-from polars_scheduler import SchedulerPlugin
+from polars_scheduler import Scheduler
 
 
 @pytest.mark.failing(reason="Schedules both at 7am")
@@ -31,6 +31,6 @@ def test_daily_frequency(frequency, expected_height):
         },
     )
 
-    scheduler = SchedulerPlugin(df)
+    scheduler = Scheduler(df)
     result = scheduler.schedule()
     assert result.height == expected_height

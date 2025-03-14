@@ -1,6 +1,6 @@
 import polars as pl
 import pytest
-from polars_scheduler import SchedulerPlugin
+from polars_scheduler import Scheduler
 
 
 def test_exact_time_window():
@@ -19,7 +19,7 @@ def test_exact_time_window():
         },
     )
 
-    scheduler = SchedulerPlugin(df)
+    scheduler = Scheduler(df)
     result = scheduler.schedule(strategy="earliest")
 
     breakfast = result.filter(pl.col("entity_name") == "breakfast")
@@ -43,7 +43,7 @@ def test_range_time_window():
         },
     )
 
-    scheduler = SchedulerPlugin(df)
+    scheduler = Scheduler(df)
 
     # With earliest strategy
     earliest = scheduler.schedule(strategy="earliest")
@@ -77,7 +77,7 @@ def test_multiple_windows():
         },
     )
 
-    scheduler = SchedulerPlugin(df)
+    scheduler = Scheduler(df)
 
     # With earliest strategy, should pick first window
     earliest = scheduler.schedule(strategy="earliest")

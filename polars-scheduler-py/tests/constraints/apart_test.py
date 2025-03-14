@@ -1,5 +1,5 @@
 import polars as pl
-from polars_scheduler import SchedulerPlugin
+from polars_scheduler import Scheduler
 
 
 def test_apart_constraint():
@@ -18,7 +18,7 @@ def test_apart_constraint():
         },
     )
 
-    scheduler = SchedulerPlugin(df)
+    scheduler = Scheduler(df)
     instances = scheduler.schedule(
         strategy="earliest",
         day_start="07:00",

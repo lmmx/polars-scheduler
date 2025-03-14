@@ -42,45 +42,29 @@ Here is a full demo showing how to:
 
 ```python
 import polars as pl
-import polars_scheduler  # noqa: F401
+from polars_scheduler import Scheduler
 
 # Create a new empty schedule
-schedule = pl.DataFrame().scheduler.new()
+scheduler = Scheduler()
 
 # Add simple meal and medication schedule
-schedule = schedule.scheduler.add(
-    event="breakfast",
-    category="meal",
-    unit="serving",
-    frequency="1x daily",
-    windows=["08:00"],
+scheduler.add(
+    event="chicken",
+    category="food",
+    unit="meal",
+    frequency="3x daily",
+    windows=["08:00", "12:00-14:00", "19:00"],
 )
 
-schedule = schedule.scheduler.add(
-    event="lunch",
-    category="meal",
-    unit="serving",
-    frequency="1x daily",
-    windows=["12:00-13:00"],
-)
-
-schedule = schedule.scheduler.add(
-    event="dinner",
-    category="meal",
-    unit="serving",
-    frequency="1x daily",
-    windows=["18:00-20:00"],
-)
-
-schedule = schedule.scheduler.add(
+scheduler.add(
     event="vitamin",
     category="supplement",
     unit="pill",
     frequency="1x daily",
-    constraints=["≥1h after meal"],
+    constraints=["≥1h after food"],
 )
 
-schedule = schedule.scheduler.add(
+scheduler.add(
     event="antibiotic",
     category="medication",
     unit="pill",
@@ -88,7 +72,7 @@ schedule = schedule.scheduler.add(
     constraints=["≥6h apart", "≥1h before food"],
 )
 
-schedule = schedule.scheduler.add(
+scheduler.add(
     event="probiotic",
     category="supplement",
     unit="capsule",
@@ -96,38 +80,31 @@ schedule = schedule.scheduler.add(
     constraints=["≥2h after antibiotic"],
 )
 
-schedule = schedule.scheduler.add(
+scheduler.add(
     event="protein shake",
     category="supplement",
     unit="gram",
     amount=30,
     frequency="1x daily",
     constraints=[],
-    windows=["08:00", "17:00-19:00"],
+    windows=["11:00"],
     note="mix with 300ml water",
 )
 
-schedule = schedule.scheduler.add(
+scheduler.add(
     event="ginger",
     category="supplement",
     unit="shot",
     frequency="1x daily",
-    constraints=["≥1h before breakfast"],
-)
-
-schedule = schedule.scheduler.add(
-    event="gym",
-    category="exercise",
-    unit="session",
-    frequency="3x weekly",
+    constraints=["≥1h before food"],
 )
 
 # Print the original schedule
 print("--- Schedule Constraints ---")
-print(schedule)
+print(scheduler._df)
 
 # Generate an optimized schedule (Earliest)
-result = schedule.scheduler.schedule(
+result = scheduler.schedule(
     strategy="earliest",
     day_start="07:00",
     day_end="22:00",
@@ -137,7 +114,7 @@ print("\n--- Optimized Schedule (Earliest) ---")
 print(result.select(["entity_name", "instance", "time_hhmm", "Category"]))
 
 # Generate an optimized schedule (Latest)
-result_latest = schedule.scheduler.schedule(
+result_latest = scheduler.schedule(
     strategy="latest",
     day_start="07:00",
     day_end="22:00",
@@ -151,74 +128,70 @@ Example output:
 
 ```
 --- Schedule Constraints ---
-shape: (9, 9)
+shape: (6, 9)
 ┌────────────┬────────────┬─────────┬────────┬───┬───────────┬────────────┬────────────┬───────────┐
 │ Event      ┆ Category   ┆ Unit    ┆ Amount ┆ … ┆ Frequency ┆ Constraint ┆ Windows    ┆ Note      │
 │ ---        ┆ ---        ┆ ---     ┆ ---    ┆   ┆ ---       ┆ s          ┆ ---        ┆ ---       │
-│ str        ┆ str        ┆ str     ┆ f64    ┆   ┆ str       ┆ list[str]  ┆ list[str]  ┆ str       │
+│ str        ┆ str        ┆ str     ┆ f64    ┆   ┆ str       ┆ ---        ┆ list[str]  ┆ str       │
+│            ┆            ┆         ┆        ┆   ┆           ┆ list[str]  ┆            ┆           │
 ╞════════════╪════════════╪═════════╪════════╪═══╪═══════════╪════════════╪════════════╪═══════════╡
-│ breakfast  ┆ meal       ┆ serving ┆ null   ┆ … ┆ 1x daily  ┆ []         ┆ ["08:00"]  ┆ null      │
-│ lunch      ┆ meal       ┆ serving ┆ null   ┆ … ┆ 1x daily  ┆ []         ┆ ["12:00-13 │ null      │
-│            ┆            ┆         ┆        ┆   ┆           ┆            ┆ :00"]      ┆           │
-│ dinner     ┆ meal       ┆ serving ┆ null   ┆ … ┆ 1x daily  ┆ []         ┆ ["18:00-20 │ null      │
-│            ┆            ┆         ┆        ┆   ┆           ┆            ┆ :00"]      ┆           │
+│ chicken    ┆ food       ┆ meal    ┆ null   ┆ … ┆ 3x daily  ┆ []         ┆ ["08:00",  ┆ null      │
+│            ┆            ┆         ┆        ┆   ┆           ┆            ┆ "12:00-14: ┆           │
+│            ┆            ┆         ┆        ┆   ┆           ┆            ┆ 00",       ┆           │
+│            ┆            ┆         ┆        ┆   ┆           ┆            ┆ "19:0…     ┆           │
 │ vitamin    ┆ supplement ┆ pill    ┆ null   ┆ … ┆ 1x daily  ┆ ["≥1h      ┆ []         ┆ null      │
 │            ┆            ┆         ┆        ┆   ┆           ┆ after      ┆            ┆           │
-│            ┆            ┆         ┆        ┆   ┆           ┆ meal"]     ┆            ┆           │
+│            ┆            ┆         ┆        ┆   ┆           ┆ food"]     ┆            ┆           │
 │ antibiotic ┆ medication ┆ pill    ┆ null   ┆ … ┆ 2x daily  ┆ ["≥6h      ┆ []         ┆ null      │
 │            ┆            ┆         ┆        ┆   ┆           ┆ apart",    ┆            ┆           │
 │            ┆            ┆         ┆        ┆   ┆           ┆ "≥1h       ┆            ┆           │
-│            ┆            ┆         ┆        ┆   ┆           ┆ before foo ┆            ┆           │
+│            ┆            ┆         ┆        ┆   ┆           ┆ before     ┆            ┆           │
+│            ┆            ┆         ┆        ┆   ┆           ┆ food…      ┆            ┆           │
 │ probiotic  ┆ supplement ┆ capsule ┆ null   ┆ … ┆ 1x daily  ┆ ["≥2h      ┆ []         ┆ null      │
 │            ┆            ┆         ┆        ┆   ┆           ┆ after anti ┆            ┆           │
 │            ┆            ┆         ┆        ┆   ┆           ┆ biotic"]   ┆            ┆           │
-│ protein    ┆ supplement ┆ gram    ┆ 30.0   ┆ … ┆ 1x daily  ┆ []         ┆ ["08:00",  ┆ mix with  │
-│ shake      ┆            ┆         ┆        ┆   ┆           ┆            ┆ "17:00-19: ┆ 300ml     │
-│            ┆            ┆         ┆        ┆   ┆           ┆            ┆ 00"]       ┆ water     │
+│ protein    ┆ supplement ┆ gram    ┆ 30.0   ┆ … ┆ 1x daily  ┆ []         ┆ ["11:00"]  ┆ mix with  │
+│ shake      ┆            ┆         ┆        ┆   ┆           ┆            ┆            ┆ 300ml     │
+│            ┆            ┆         ┆        ┆   ┆           ┆            ┆            ┆ water     │
 │ ginger     ┆ supplement ┆ shot    ┆ null   ┆ … ┆ 1x daily  ┆ ["≥1h      ┆ []         ┆ null      │
-│            ┆            ┆         ┆        ┆   ┆           ┆ before bre ┆            ┆           │
-│            ┆            ┆         ┆        ┆   ┆           ┆ akfast"]   ┆            ┆           │
-│ gym        ┆ exercise   ┆ session ┆ null   ┆ … ┆ 3x weekly ┆ []         ┆ []         ┆ null      │
+│            ┆            ┆         ┆        ┆   ┆           ┆ before     ┆            ┆           │
+│            ┆            ┆         ┆        ┆   ┆           ┆ food"]     ┆            ┆           │
 └────────────┴────────────┴─────────┴────────┴───┴───────────┴────────────┴────────────┴───────────┘
 
 --- Optimized Schedule (Earliest) ---
-shape: (12, 4)
+shape: (9, 4)
 ┌───────────────┬──────────┬───────────┬────────────┐
 │ entity_name   ┆ instance ┆ time_hhmm ┆ Category   │
 │ ---           ┆ ---      ┆ ---       ┆ ---        │
 │ str           ┆ i32      ┆ str       ┆ str        │
 ╞═══════════════╪══════════╪═══════════╪════════════╡
-│ lunch         ┆ 1        ┆ 07:00     ┆ meal       │
-│ probiotic     ┆ 1        ┆ 07:00     ┆ supplement │
-│ gym           ┆ 2        ┆ 07:00     ┆ exercise   │
-│ dinner        ┆ 1        ┆ 07:00     ┆ meal       │
-│ antibiotic    ┆ 1        ┆ 07:00     ┆ medication │
-│ …             ┆ …        ┆ …         ┆ …          │
 │ vitamin       ┆ 1        ┆ 07:00     ┆ supplement │
+│ antibiotic    ┆ 1        ┆ 07:00     ┆ medication │
+│ probiotic     ┆ 1        ┆ 07:00     ┆ supplement │
 │ protein shake ┆ 1        ┆ 07:00     ┆ supplement │
-│ breakfast     ┆ 1        ┆ 07:00     ┆ meal       │
-│ gym           ┆ 3        ┆ 07:00     ┆ exercise   │
+│ ginger        ┆ 1        ┆ 07:00     ┆ supplement │
+│ chicken       ┆ 3        ┆ 07:30     ┆ food       │
+│ chicken       ┆ 1        ┆ 11:30     ┆ food       │
 │ antibiotic    ┆ 2        ┆ 13:00     ┆ medication │
+│ chicken       ┆ 2        ┆ 18:30     ┆ food       │
 └───────────────┴──────────┴───────────┴────────────┘
 
 --- Latest Schedule ---
-shape: (12, 4)
+shape: (9, 4)
 ┌───────────────┬──────────┬───────────┬────────────┐
 │ entity_name   ┆ instance ┆ time_hhmm ┆ Category   │
 │ ---           ┆ ---      ┆ ---       ┆ ---        │
 │ str           ┆ i32      ┆ str       ┆ str        │
 ╞═══════════════╪══════════╪═══════════╪════════════╡
+│ chicken       ┆ 1        ┆ 08:30     ┆ food       │
+│ chicken       ┆ 3        ┆ 14:30     ┆ food       │
 │ antibiotic    ┆ 1        ┆ 16:00     ┆ medication │
-│ lunch         ┆ 1        ┆ 22:00     ┆ meal       │
-│ vitamin       ┆ 1        ┆ 22:00     ┆ supplement │
+│ chicken       ┆ 2        ┆ 19:30     ┆ food       │
 │ protein shake ┆ 1        ┆ 22:00     ┆ supplement │
-│ dinner        ┆ 1        ┆ 22:00     ┆ meal       │
-│ …             ┆ …        ┆ …         ┆ …          │
-│ gym           ┆ 1        ┆ 22:00     ┆ exercise   │
-│ breakfast     ┆ 1        ┆ 22:00     ┆ meal       │
 │ antibiotic    ┆ 2        ┆ 22:00     ┆ medication │
-│ probiotic     ┆ 1        ┆ 22:00     ┆ supplement │
+│ vitamin       ┆ 1        ┆ 22:00     ┆ supplement │
 │ ginger        ┆ 1        ┆ 22:00     ┆ supplement │
+│ probiotic     ┆ 1        ┆ 22:00     ┆ supplement │
 └───────────────┴──────────┴───────────┴────────────┘
 ```
 

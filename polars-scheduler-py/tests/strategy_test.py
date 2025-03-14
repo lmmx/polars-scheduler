@@ -1,6 +1,6 @@
 import polars as pl
 import pytest
-from polars_scheduler import SchedulerPlugin
+from polars_scheduler import Scheduler
 
 
 @pytest.mark.failing(reason="Schedules both at 7am")
@@ -20,7 +20,7 @@ def test_earliest_strategy():
         },
     )
 
-    scheduler = SchedulerPlugin(df)
+    scheduler = Scheduler(df)
     result = scheduler.schedule(strategy="earliest", day_start="07:00", day_end="22:00")
 
     # With earliest strategy, should be at start of window
@@ -47,7 +47,7 @@ def test_latest_strategy():
         },
     )
 
-    scheduler = SchedulerPlugin(df)
+    scheduler = Scheduler(df)
     result = scheduler.schedule(strategy="latest", day_start="07:00", day_end="22:00")
 
     # With latest strategy, should be at end of window

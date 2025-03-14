@@ -82,7 +82,7 @@ def schedule_events(
 
 
 @register_dataframe_namespace("scheduler")
-class SchedulerPlugin:
+class Scheduler:
     _schema = {
         "Event": pl.String,
         "Category": pl.String,
@@ -111,7 +111,7 @@ class SchedulerPlugin:
         constraints: list[str] | None = None,
         windows: list[str] | None = None,
         note: str | None = None,
-    ) -> pl.DataFrame:
+    ) -> None:
         """
         Add a new resource event to the schedule.
 
@@ -148,21 +148,12 @@ class SchedulerPlugin:
                 "Windows": [windows],
                 "Note": [note],
             },
-            schema={
-                "Event": pl.String,
-                "Category": pl.String,
-                "Unit": pl.String,
-                "Amount": pl.Float64,
-                "Divisor": pl.Int64,
-                "Frequency": pl.String,
-                "Constraints": pl.List(pl.String),
-                "Windows": pl.List(pl.String),
-                "Note": pl.String,
-            },
+            schema=self._schema,
         )
 
         # Append to existing DataFrame
-        return pl.concat([self._df, new_row], how="vertical")
+        self._df = pl.concat([self._df, new_row], how="vertical")
+        return
 
     def schedule(
         self,

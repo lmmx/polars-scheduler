@@ -1,6 +1,6 @@
 import polars as pl
 import pytest
-from polars_scheduler import SchedulerPlugin
+from polars_scheduler import Scheduler
 
 
 @pytest.mark.failing(reason="Schedules both at 7am")
@@ -21,7 +21,7 @@ def test_after_constraint():
     )
     print(df)
 
-    scheduler = SchedulerPlugin(df)
+    scheduler = Scheduler(df)
     instances = scheduler.schedule(
         strategy="earliest",
         day_start="07:00",
