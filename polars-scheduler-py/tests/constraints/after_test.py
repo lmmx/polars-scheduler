@@ -29,5 +29,5 @@ def test_after_constraint():
     )
     print(instances)
     # Supplement should be at least 1h after breakfast
-    timings = instances.get_column("time_minutes")
-    assert timings.diff().drop_nulls().item() >= (1 * 60)
+    timings = instances.get_column("time_minutes") / 60
+    assert timings.diff().drop_nulls().item() >= 1

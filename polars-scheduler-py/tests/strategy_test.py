@@ -26,8 +26,8 @@ def test_earliest_strategy():
     # With earliest strategy, should be at start of window
     pill_time = (
         result.filter(pl.col("entity_name") == "pill").select("time_minutes").item()
-    )
-    assert pill_time == 480  # 08:00 (start of window)
+    ) / 60
+    assert pill_time == 8  # 08:00 (start of window)
 
 
 @pytest.mark.failing(reason="Schedules both at 7am")
@@ -53,5 +53,5 @@ def test_latest_strategy():
     # With latest strategy, should be at end of window
     pill_time = (
         result.filter(pl.col("entity_name") == "pill").select("time_minutes").item()
-    )
-    assert pill_time == 1200  # 20:00 (end of window)
+    ) / 60
+    assert pill_time == 20  # 20:00 (end of window)
