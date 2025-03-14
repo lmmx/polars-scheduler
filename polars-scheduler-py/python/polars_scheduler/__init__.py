@@ -97,14 +97,14 @@ class Scheduler:
 
     def __init__(self, df: pl.DataFrame | None = None):
         """Store schedule constraints, recreate the DataFrame if its schema is wrong."""
-        null = df is None
-        usable = not null and df.schema == self._schema
-        if usable:
-            self._df = df
+        if df is None or df.height == 0:
+            # Create a new empty DataFrame with the correct schema
+            self._df = pl.DataFrame(schema=self._schema)
         else:
-            self._df = pl.DataFrame(
-                None if null else df.to_dicts(),
-                schema=self._schema,
+            # Check if existing DataFrame has correct schema
+            usable = df.schema == self._schema
+            self._df = (
+                df if usable else pl.DataFrame(df.to_dicts(), schema=self._schema)
             )
 
     def add(
