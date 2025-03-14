@@ -12,7 +12,6 @@ def test_namespace_existence():
 def test_scheduler_methods():
     """Test that the scheduler namespace has the expected methods."""
     df = pl.DataFrame()
-    assert hasattr(df.scheduler, "new")
     assert hasattr(df.scheduler, "add")
     assert hasattr(df.scheduler, "schedule")
 
@@ -20,7 +19,7 @@ def test_scheduler_methods():
 def test_empty_schedule():
     """Test scheduling with an empty DataFrame."""
     df = pl.DataFrame()
-    scheduler = df.scheduler.new()
+    scheduler = df.scheduler()
     result = scheduler.scheduler.schedule()  # YEESH
 
     # Should return an empty DataFrame with expected schema
@@ -60,13 +59,13 @@ def test_direct_construction():
 
 
 def test_plugin_api_works():
-    """Test using the plugin API (new and add methods)."""
+    """Test using the plugin API (add method)."""
     # Start with an empty schedule
     df = pl.DataFrame()
-    schedule = df.scheduler.new()
+    scheduler = df.scheduler()
 
     # Add an event
-    schedule = schedule.scheduler.add(
+    schedule = scheduler.add(
         event="pill",
         category="medication",
         unit="pill",
