@@ -367,6 +367,24 @@ pub fn solve_schedule(
                 // p_i <= dist_iw => p_i will be minimum distance to any window
                 let desc = format!("(Win) p_{} <= dist_{}_w{}", cv.instance, cv.instance, w_idx);
                 add_constraint(&desc, constraint!(p_i <= dist_iw));
+
+                if track_window_usage {
+                    // If this window is chosen, force p_i = dist_iw
+                    let window_use_var = instance_window_vars[&(cv.instance, w_idx)];
+                    let desc = format!(
+                        "(Win) p_{} >= dist_{}_w{} - M*(1-use)",
+                        cv.instance, cv.instance, w_idx
+                    );
+                    add_constraint(
+                        &desc,
+                        constraint!(p_i >= dist_iw - big_m * (1.0 - window_use_var)),
+                    );
+                } else {
+                    // For entities with only one window, directly force p_i = dist_iw
+                    let desc =
+                        format!("(Win) p_{} >= dist_{}_w{}", cv.instance, cv.instance, w_idx);
+                    add_constraint(&desc, constraint!(p_i >= dist_iw));
+                }
             }
         }
 
@@ -425,6 +443,24 @@ pub fn solve_schedule(
 
             let desc = format!("(Dist) {}_window{} can be used at most once", ename, w_idx);
             add_constraint(&desc, constraint!(sum_expr <= 1.0));
+        }
+    }
+
+    // Add chronological ordering constraints for instances
+    for (ename, eclocks) in &entity_clocks {
+        if eclocks.len() <= 1 {
+            continue; // Skip entities with only one instance
+        }
+
+        for i in 0..eclocks.len() - 1 {
+            let c1 = &eclocks[i]; // Earlier instance
+            let c2 = &eclocks[i + 1]; // Later instance
+
+            let desc = format!(
+                "(Order) {}_instance{} must be before instance{}",
+                ename, c1.instance, c2.instance
+            );
+            add_constraint(&desc, constraint!(c1.var <= c2.var));
         }
     }
 

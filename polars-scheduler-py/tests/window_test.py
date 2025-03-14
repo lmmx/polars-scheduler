@@ -95,7 +95,6 @@ def test_multiple_windows():
     assert 17 <= shake_time <= 19  # 17:00 - 19:00
 
 
-@pytest.mark.xfail(reason="See bug report in issue #20")
 @pytest.mark.parametrize(
     "strategy,hhmm_1",
     [
@@ -105,6 +104,7 @@ def test_multiple_windows():
 )
 def test_one_meal_window_usage(strategy, hhmm_1):
     """Test that scheduling respects time ranges."""
+    # Bug report in issue #20
     df = pl.DataFrame(
         {
             "Event": ["Chicken and rice"],
@@ -176,14 +176,14 @@ def test_two_meal_window_usage(strategy, hhmm_1, hhmm_2):
     assert second.get_column("time_hhmm").item() == hhmm_2
 
 
-@pytest.mark.xfail(reason="See bug report in issue #19")
-def test_flip_bug():
+def test_instance_order():
     """
     Attempts to reproduce a 'flipped instance' scenario for a 2x-daily meal
     with 2 partially overlapping windows, under a 'latest' strategy.
     If there's no forced anchor or ordering, the solver may label
     the later slot as #1 and the earlier slot as #2.
     """
+    # Bug report in issue #19
     df = pl.DataFrame(
         {
             "Event": ["Chicken and rice"],
