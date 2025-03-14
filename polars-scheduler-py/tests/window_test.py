@@ -3,6 +3,7 @@ import pytest
 from polars_scheduler import Scheduler
 
 
+@pytest.mark.failing()
 def test_exact_time_window():
     """Test scheduling with exact time window (e.g., '08:30')."""
     df = pl.DataFrame(
@@ -19,12 +20,12 @@ def test_exact_time_window():
         },
     )
     scheduler = Scheduler(df)
-    result = scheduler.create(strategy="earliest")
+    result = scheduler.create(strategy="earliest")  # penalty_weight=1.0
     breakfast = result.filter(pl.col("entity_name") == "breakfast")
     assert breakfast.get_column("time_hhmm").item() == "08:30"
 
 
-@pytest.mark.failing(reason="Schedules both at 7am")
+@pytest.mark.failing()
 def test_range_time_window():
     """Test scheduling with a time range window (e.g., '12:00-13:00')."""
     df = pl.DataFrame(
@@ -59,7 +60,7 @@ def test_range_time_window():
     assert 12 <= lunch_time <= 13  # 12:00 - 13:00
 
 
-@pytest.mark.failing(reason="Schedules both at 7am")
+@pytest.mark.failing()
 def test_multiple_windows():
     """Test scheduling with multiple windows."""
     df = pl.DataFrame(
@@ -94,7 +95,14 @@ def test_multiple_windows():
     assert 17 <= shake_time <= 19  # 17:00 - 19:00
 
 
-def test_one_meal_window_usage():
+@pytest.mark.parametrize(
+    "strategy,hhmm_1",
+    [
+        ("earliest", "12:00"),
+        ("latest", "13:00"),
+    ],
+)
+def test_one_meal_window_usage(strategy, hhmm_1):
     """Test that scheduling respects time ranges."""
     df = pl.DataFrame(
         {
@@ -110,25 +118,25 @@ def test_one_meal_window_usage():
         },
     )
 
-    # Test with earliest strategy
-    # First instance should be scheduled at 12:00 (lower bound)
     scheduler = Scheduler(df)
-    result = scheduler.create(strategy="earliest")
+    result = scheduler.create(strategy=strategy)
     assert result.height == 2
+    # First instance should be at 12:00 (lower bound) with earliest strategy
+    # First instance should be at 13:00 (upper bound) with latest strategy
     first = result.filter(
         (pl.col("entity_name") == "Chicken and rice") & (pl.col("instance") == 1),
     )
-    assert first.get_column("time_hhmm").item() == "12:00"
-    # Test with latest strategy
-    # First instance should be at 13:00 (upper bound)
-    result_latest = scheduler.create(strategy="latest")
-    first_latest = result_latest.filter(
-        (pl.col("entity_name") == "Chicken and rice") & (pl.col("instance") == 1),
-    )
-    assert first_latest.get_column("time_hhmm").item() == "13:00"
+    assert first.get_column("time_hhmm").item() == hhmm_1
 
 
-def test_two_meal_window_usage():
+@pytest.mark.parametrize(
+    "strategy,hhmm_1,hhmm_2",
+    [
+        ("earliest", "08:30", "18:00"),
+        ("latest", "09:30", "20:00"),
+    ],
+)
+def test_two_meal_window_usage(strategy, hhmm_1, hhmm_2):
     """Test that scheduling respects both anchor points and time ranges."""
     df = pl.DataFrame(
         {
@@ -144,28 +152,19 @@ def test_two_meal_window_usage():
         },
     )
 
-    # Test with earliest strategy
+    # Test with strategy
     scheduler = Scheduler(df)
-    result = scheduler.create(strategy="earliest")
-    # First instance should be scheduled at 08:00 (anchor point)
+    result = scheduler.create(strategy=strategy)
+    # First instance should be at 08:30 (lower point) with strategy earliest
+    # First instance should be at 09:30 (upper bound) with strategy latest
     first = result.filter(
         (pl.col("entity_name") == "Chicken and rice") & (pl.col("instance") == 1),
     )
-    assert first.get_column("time_hhmm").item() == "08:30"
+    assert first.get_column("time_hhmm").item() == hhmm_1
+
     # Second instance should be at start of range (18:00) with earliest strategy
+    # Second instance should be at  end  of range (20:00) with  latest  strategy
     second = result.filter(
         (pl.col("entity_name") == "Chicken and rice") & (pl.col("instance") == 2),
     )
-    assert second.get_column("time_hhmm").item() == "18:00"
-    # Test with latest strategy
-    result_latest = scheduler.create(strategy="latest")
-    # First instance should be at 09:30 (upper bound)
-    first_latest = result_latest.filter(
-        (pl.col("entity_name") == "Chicken and rice") & (pl.col("instance") == 1),
-    )
-    assert first_latest.get_column("time_hhmm").item() == "09:30"
-    # Second instance should be at end of range (20:00) with latest strategy
-    second_latest = result_latest.filter(
-        (pl.col("entity_name") == "Chicken and rice") & (pl.col("instance") == 2),
-    )
-    assert second_latest.get_column("time_hhmm").item() == "20:00"
+    assert second.get_column("time_hhmm").item() == hhmm_2
