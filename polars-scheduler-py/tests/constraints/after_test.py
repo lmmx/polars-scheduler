@@ -3,7 +3,7 @@ import pytest
 from polars_scheduler import Scheduler
 
 
-@pytest.mark.failing(reason="Schedules both at 7am")
+@pytest.mark.failing()
 def test_after_constraint():
     """Test the '≥Xh after Y' constraint."""
     df = pl.DataFrame(

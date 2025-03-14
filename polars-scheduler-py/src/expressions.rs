@@ -20,10 +20,10 @@ pub struct ScheduleKwargs {
     #[serde(default)]
     pub windows: Option<Vec<String>>,
 
-    #[serde(default = 0.0)]
+    #[serde(default)]
     pub penalty_weight: f64,
 
-    #[serde(default = 0.3)]
+    #[serde(default)]
     pub window_tolerance: f64,
 
     #[serde(default)]
@@ -216,29 +216,8 @@ pub fn schedule_events(inputs: &[Series], kwargs: ScheduleKwargs) -> PolarsResul
         Vec::new()
     };
 
-    // Parse penalty_weight
-    let penalty_weight = if kwargs.penalty_weight.is_empty() {
-        0.3
-    } else {
-        match kwargs.penalty_weight.parse::<f64>() {
-            Ok(value) => value,
-            Err(e) => polars_bail!(
-                ComputeError: format!("Invalid penalty_weight: {}", e)
-            ),
-        }
-    };
-
-    // Parse window_tolerance
-    let window_tolerance = if kwargs.window_tolerance.is_empty() {
-        0.0
-    } else {
-        match kwargs.window_tolerance.parse::<f64>() {
-            Ok(value) => value,
-            Err(e) => polars_bail!(
-                ComputeError: format!("Invalid window_tolerance: {}", e)
-            ),
-        }
-    };
+    let penalty_weight = kwargs.penalty_weight;
+    let window_tolerance = kwargs.window_tolerance;
 
     // Create scheduler config
     let config = SchedulerConfig {
