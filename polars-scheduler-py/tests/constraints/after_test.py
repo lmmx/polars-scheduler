@@ -19,9 +19,9 @@ def test_after_constraint():
             "Note": [None, None],
         },
     )
-    print(df)
-
     scheduler = Scheduler(df)
+    print(scheduler._df)
+
     instances = scheduler.create(
         strategy="earliest",
         day_start="07:00",
