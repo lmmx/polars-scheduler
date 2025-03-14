@@ -17,7 +17,7 @@ def test_earliest_strategy():
             "Constraints": [[]],
             "Windows": [["08:00-20:00"]],  # Wide window
             "Note": [None],
-        }
+        },
     )
 
     scheduler = SchedulerPlugin(df)
@@ -44,7 +44,7 @@ def test_latest_strategy():
             "Constraints": [[]],
             "Windows": [["08:00-20:00"]],  # Wide window
             "Note": [None],
-        }
+        },
     )
 
     scheduler = SchedulerPlugin(df)

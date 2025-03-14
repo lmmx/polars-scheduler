@@ -1,5 +1,4 @@
 import polars as pl
-import pytest
 from polars_scheduler import SchedulerPlugin
 
 
@@ -16,12 +15,14 @@ def test_apart_constraint():
             "Constraints": [["≥6h apart"]],
             "Windows": [[]],
             "Note": [None],
-        }
+        },
     )
 
     scheduler = SchedulerPlugin(df)
     instances = scheduler.schedule(
-        strategy="earliest", day_start="07:00", day_end="22:00"
+        strategy="earliest",
+        day_start="07:00",
+        day_end="22:00",
     )
 
     # Should have 2 instances

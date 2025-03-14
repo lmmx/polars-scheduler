@@ -54,5 +54,5 @@ strip = true
 
 [tool.pytest.ini_options]
 markers = [
-  "failing: Tests that don't work",
+  "failing: Tests that don't work"
 ]

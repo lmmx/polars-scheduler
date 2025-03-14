@@ -1,6 +1,5 @@
 import polars as pl
 import polars_scheduler  # noqa: F401
-import pytest
 from polars_scheduler import SchedulerPlugin
 
 
@@ -48,7 +47,7 @@ def test_direct_construction():
             "Constraints": [[]],
             "Windows": [[]],
             "Note": [None],
-        }
+        },
     )
 
     # Create scheduler directly
@@ -68,7 +67,10 @@ def test_plugin_api_works():
 
     # Add an event
     schedule = schedule.scheduler.add(
-        event="pill", category="medication", unit="pill", frequency="1x daily"
+        event="pill",
+        category="medication",
+        unit="pill",
+        frequency="1x daily",
     )
 
     # Schedule it

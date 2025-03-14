@@ -1,5 +1,4 @@
 import polars as pl
-import pytest
 from polars_scheduler import SchedulerPlugin
 
 
@@ -16,7 +15,7 @@ def test_day_boundaries():
             "Constraints": [[]],
             "Windows": [[]],  # No specific window
             "Note": [None],
-        }
+        },
     )
 
     scheduler = SchedulerPlugin(df)

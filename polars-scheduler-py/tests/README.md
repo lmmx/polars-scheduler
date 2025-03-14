@@ -24,4 +24,3 @@
 
 - `test_earliest_strategy`
 - `test_latest_strategy`
-

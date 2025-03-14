@@ -16,7 +16,7 @@ def test_exact_time_window():
             "Constraints": [[]],
             "Windows": [["08:00"]],
             "Note": [None],
-        }
+        },
     )
 
     scheduler = SchedulerPlugin(df)
@@ -40,7 +40,7 @@ def test_range_time_window():
             "Constraints": [[]],
             "Windows": [["12:00-13:00"]],
             "Note": [None],
-        }
+        },
     )
 
     scheduler = SchedulerPlugin(df)
@@ -74,7 +74,7 @@ def test_multiple_windows():
             "Constraints": [[]],
             "Windows": [["08:00", "17:00-19:00"]],
             "Note": [None],
-        }
+        },
     )
 
     scheduler = SchedulerPlugin(df)

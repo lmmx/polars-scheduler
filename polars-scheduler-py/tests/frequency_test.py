@@ -28,7 +28,7 @@ def test_daily_frequency(frequency, expected_height):
             "Constraints": [[]],
             "Windows": [[]],
             "Note": [None],
-        }
+        },
     )
 
     scheduler = SchedulerPlugin(df)

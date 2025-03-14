@@ -23,7 +23,9 @@ def test_after_constraint():
 
     scheduler = SchedulerPlugin(df)
     instances = scheduler.schedule(
-        strategy="earliest", day_start="07:00", day_end="22:00"
+        strategy="earliest",
+        day_start="07:00",
+        day_end="22:00",
     )
     print(instances)
     # Supplement should be at least 1h after breakfast
