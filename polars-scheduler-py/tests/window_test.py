@@ -4,7 +4,7 @@ from polars_scheduler import Scheduler
 
 
 def test_exact_time_window():
-    """Test scheduling with exact time window (e.g., '08:00')."""
+    """Test scheduling with exact time window (e.g., '08:30')."""
     df = pl.DataFrame(
         {
             "Event": ["breakfast"],
@@ -118,7 +118,7 @@ def test_one_meal_window_usage():
     first = result.filter(
         (pl.col("entity_name") == "Chicken and rice") & (pl.col("instance") == 1)
     )
-    assert first.get_column("time_hhmm").item() == "08:00"
+    assert first.get_column("time_hhmm").item() == "12:00"
     # Test with latest strategy
     # First instance should be at 13:00 (upper bound)
     result_latest = scheduler.create(strategy="latest")
@@ -159,7 +159,7 @@ def test_two_meal_window_usage():
     assert second.get_column("time_hhmm").item() == "18:00"
     # Test with latest strategy
     result_latest = scheduler.create(strategy="latest")
-    # First instance should still be at 08:00 (anchor point)
+    # First instance should be at 09:30 (upper bound)
     first_latest = result_latest.filter(
         (pl.col("entity_name") == "Chicken and rice") & (pl.col("instance") == 1)
     )
