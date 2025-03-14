@@ -1,5 +1,4 @@
 import polars as pl
-import polars_scheduler  # noqa: F401
 from polars_scheduler import Scheduler
 
 
@@ -17,10 +16,8 @@ def test_scheduler_methods():
 
 
 def test_empty_schedule():
-    """Test scheduling with an empty DataFrame."""
-    df = pl.DataFrame()
-    # Preferably just `from polars_scheduler import Scheduler` and instantiate directly
-    scheduler = df.scheduler()
+    """Test scheduling from an empty schedule."""
+    scheduler = Scheduler()
     result = scheduler.create()
 
     # Should return an empty DataFrame with expected schema
