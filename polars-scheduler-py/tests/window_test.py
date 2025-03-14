@@ -116,14 +116,14 @@ def test_one_meal_window_usage():
     result = scheduler.create(strategy="earliest")
     assert result.height == 2
     first = result.filter(
-        (pl.col("entity_name") == "Chicken and rice") & (pl.col("instance") == 1)
+        (pl.col("entity_name") == "Chicken and rice") & (pl.col("instance") == 1),
     )
     assert first.get_column("time_hhmm").item() == "12:00"
     # Test with latest strategy
     # First instance should be at 13:00 (upper bound)
     result_latest = scheduler.create(strategy="latest")
     first_latest = result_latest.filter(
-        (pl.col("entity_name") == "Chicken and rice") & (pl.col("instance") == 1)
+        (pl.col("entity_name") == "Chicken and rice") & (pl.col("instance") == 1),
     )
     assert first_latest.get_column("time_hhmm").item() == "13:00"
 
@@ -149,23 +149,23 @@ def test_two_meal_window_usage():
     result = scheduler.create(strategy="earliest")
     # First instance should be scheduled at 08:00 (anchor point)
     first = result.filter(
-        (pl.col("entity_name") == "Chicken and rice") & (pl.col("instance") == 1)
+        (pl.col("entity_name") == "Chicken and rice") & (pl.col("instance") == 1),
     )
     assert first.get_column("time_hhmm").item() == "08:30"
     # Second instance should be at start of range (18:00) with earliest strategy
     second = result.filter(
-        (pl.col("entity_name") == "Chicken and rice") & (pl.col("instance") == 2)
+        (pl.col("entity_name") == "Chicken and rice") & (pl.col("instance") == 2),
     )
     assert second.get_column("time_hhmm").item() == "18:00"
     # Test with latest strategy
     result_latest = scheduler.create(strategy="latest")
     # First instance should be at 09:30 (upper bound)
     first_latest = result_latest.filter(
-        (pl.col("entity_name") == "Chicken and rice") & (pl.col("instance") == 1)
+        (pl.col("entity_name") == "Chicken and rice") & (pl.col("instance") == 1),
     )
     assert first_latest.get_column("time_hhmm").item() == "09:30"
     # Second instance should be at end of range (20:00) with latest strategy
     second_latest = result_latest.filter(
-        (pl.col("entity_name") == "Chicken and rice") & (pl.col("instance") == 2)
+        (pl.col("entity_name") == "Chicken and rice") & (pl.col("instance") == 2),
     )
     assert second_latest.get_column("time_hhmm").item() == "20:00"
