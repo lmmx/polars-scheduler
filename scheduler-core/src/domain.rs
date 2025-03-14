@@ -1,4 +1,5 @@
 use good_lp::variable::Variable;
+use regex::Regex;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -24,29 +25,31 @@ pub struct ConstraintExpr {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum Frequency {
-    Daily,
-    TwiceDaily,
-    ThreeTimesDaily,
-    EveryXHours(u32),
+    /// “N× daily” (e.g. "9x daily" => TimesPerDay(9)).
+    TimesPerDay(u32),
 }
 
 impl Frequency {
-    pub fn from_frequency_str(s: &str) -> Self {
-        let lower = s.to_lowercase();
-        match () {
-            _ if lower.contains("3x") => Self::ThreeTimesDaily,
-            _ if lower.contains("2x") => Self::TwiceDaily,
-            _ if lower.contains("1x") => Self::Daily,
-            _ => Self::EveryXHours(8),
+    /// Parse strings like "3x daily" into an enum.
+    /// Anything else returns an error.
+    pub fn from_frequency_str(s: &str) -> Result<Self, String> {
+        let input = s.trim().to_lowercase();
+        let rx_times_daily = Regex::new(r"^(\d+)\s*x\s*daily$").unwrap();
+        // "(\d+)x daily" => TimesPerDay(N)
+        if let Some(caps) = rx_times_daily.captures(&input) {
+            let n: u32 = caps[1]
+                .parse()
+                .map_err(|_| format!("Invalid integer in '{}'", s))?;
+            return Ok(Frequency::TimesPerDay(n));
         }
+        // If none matched, return an error
+        Err(format!("Unrecognized frequency string: '{}'", s))
     }
 
+    /// Returns the integer value stored in `TimesPerDay(n)`.
     pub fn instances_per_day(&self) -> usize {
         match self {
-            Self::Daily => 1,
-            Self::TwiceDaily => 2,
-            Self::ThreeTimesDaily => 3,
-            Self::EveryXHours(h) => 24 / (*h as usize),
+            Frequency::TimesPerDay(n) => *n as usize,
         }
     }
 }
