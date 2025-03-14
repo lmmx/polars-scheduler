@@ -79,7 +79,7 @@ def schedule_events(
         "day_start": day_start,
         "day_end": day_end,
         "debug": debug,
-        **({"windows": windows} if windows is not None else {})
+        **({"windows": windows} if windows is not None else {}),
         "penalty_weight": penalty_weight,
         "window_tolerance": window_tolerance,
     }
@@ -173,6 +173,8 @@ class Scheduler:
         day_start: str = "08:00",
         day_end: str = "22:00",
         windows: list[str] | None = None,
+        penalty_weight: float = 0.3,
+        window_tolerance: float = 0.0,
         debug: bool = False,
     ) -> pl.DataFrame:
         """
@@ -183,6 +185,8 @@ class Scheduler:
             day_start: Start time in "HH:MM" format
             day_end: End time in "HH:MM" format
             windows: Optional list of global time windows in "HH:MM" or "HH:MM-HH:MM" format
+            penalty_weight: Weight for time window penalties in the objective function (default: 0.3)
+            window_tolerance: Distance tolerance for considering an event within a time window (default: 0.0)
             debug: Whether to print debug information
 
         Returns:
@@ -199,6 +203,8 @@ class Scheduler:
                 day_start=day_start,
                 day_end=day_end,
                 windows=windows,
+                penalty_weight=penalty_weight,
+                window_tolerance=window_tolerance,
                 debug=debug,
             ),
         ).unnest("events")
