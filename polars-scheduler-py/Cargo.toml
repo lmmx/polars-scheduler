@@ -1,7 +1,6 @@
 [dependencies]
 scheduler-core = {path = "../scheduler-core"}
 serde = {workspace = true, features = ["derive"]}
-arrow2 = {version = "0.18.0", features = ["compute_concatenate"], default-features = false}
 polars.workspace = true
 polars-arrow.workspace = true
 pyo3.workspace = true
