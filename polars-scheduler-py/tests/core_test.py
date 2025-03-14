@@ -59,11 +59,10 @@ def test_direct_construction():
 def test_plugin_api_works():
     """Test using the plugin API (add method)."""
     # Start with an empty schedule
-    df = pl.DataFrame()
-    scheduler = df.scheduler()
+    scheduler = Scheduler()
 
     # Add an event
-    schedule = scheduler.add(
+    scheduler.add(
         event="pill",
         category="medication",
         unit="pill",
@@ -71,7 +70,7 @@ def test_plugin_api_works():
     )
 
     # Schedule it
-    result = schedule.scheduler.create()
+    result = scheduler.create()
 
     # Should have one pill event
     assert result.filter(pl.col("entity_name") == "pill").height == 1
