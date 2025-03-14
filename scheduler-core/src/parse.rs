@@ -52,11 +52,13 @@ pub fn parse_from_table(rows: Vec<Vec<String>>) -> Result<Vec<Entity>, String> {
                     .collect::<Result<Vec<_>, _>>()?,
             };
 
+            let frequency = Frequency::from_frequency_str(&row[5])?;
+
             // (3) build the entity
             Ok(Entity {
                 name: row[0].to_string(),
                 category: row[1].to_string(),
-                frequency: Frequency::from_frequency_str(&row[5]),
+                frequency: frequency,
                 constraints: cexprs,
                 windows: wspecs,
             })
