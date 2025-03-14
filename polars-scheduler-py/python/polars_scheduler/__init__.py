@@ -42,6 +42,8 @@ def schedule_events(
     day_start: str = "08:00",
     day_end: str = "22:00",
     windows: list[str] | None = None,
+    penalty_weight: float = 0.3,
+    window_tolerance: float = 0.0,
     debug: bool = False,
 ) -> pl.Expr:
     """
@@ -58,8 +60,12 @@ def schedule_events(
         Start of day in "HH:MM" format
     day_end : str, default "22:00"
         End of day in "HH:MM" format
-    windows : List[str], optional
+    windows : list[str], optional
         Global time windows in "HH:MM" or "HH:MM-HH:MM" format
+    penalty_weight : float, default 0.3
+        Weight for time window penalties in the scheduling objective function
+    window_tolerance : float, default 0.0
+        Distance tolerance for considering an event to be within a time window
     debug : bool, default False
         Whether to print debug information
 
@@ -73,11 +79,10 @@ def schedule_events(
         "day_start": day_start,
         "day_end": day_end,
         "debug": debug,
+        **({"windows": windows} if windows is not None else {})
+        "penalty_weight": penalty_weight,
+        "window_tolerance": window_tolerance,
     }
-
-    if windows is not None:
-        kwargs["windows"] = windows
-
     return plug(expr, **kwargs)
 
 
