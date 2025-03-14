@@ -1,11 +1,10 @@
 use polars::prelude::*;
 use pyo3_polars::derive::polars_expr;
-use serde::Deserialize;
 use scheduler_core::{
-    Entity, SchedulerConfig, ScheduleStrategy,
-    parse_one_constraint, parse_one_window, solve_schedule,
-    format_minutes_to_hhmm
+    format_minutes_to_hhmm, parse_one_constraint, parse_one_window, solve_schedule, Entity,
+    ScheduleStrategy, SchedulerConfig,
 };
+use serde::Deserialize;
 
 #[derive(Deserialize)]
 pub struct ScheduleKwargs {
@@ -28,12 +27,15 @@ pub struct ScheduleKwargs {
 /// Computes output type for the expression
 fn schedule_output_type(_input_fields: &[Field]) -> PolarsResult<Field> {
     // We'll return a struct array with scheduled times for each event/instance
-    Ok(Field::new("schedule".into(), DataType::Struct(vec![
-        Field::new("entity_name".into(), DataType::String),
-        Field::new("instance".into(), DataType::Int32),
-        Field::new("time_minutes".into(), DataType::Int32),
-        Field::new("time_hhmm".into(), DataType::String),
-    ])))
+    Ok(Field::new(
+        "schedule".into(),
+        DataType::Struct(vec![
+            Field::new("entity_name".into(), DataType::String),
+            Field::new("instance".into(), DataType::Int32),
+            Field::new("time_minutes".into(), DataType::Int32),
+            Field::new("time_hhmm".into(), DataType::String),
+        ]),
+    ))
 }
 
 /// Polars expression that schedules events based on their constraints
@@ -73,13 +75,16 @@ pub fn schedule_events(inputs: &[Series], kwargs: ScheduleKwargs) -> PolarsResul
 
     for i in 0..df.len() {
         // Extract basic fields
-        let event = event_col.get(i)
+        let event = event_col
+            .get(i)
             .or_else(|_| Err(PolarsError::ComputeError("Missing event name".into())))?;
 
-        let category = category_col.get(i)
+        let category = category_col
+            .get(i)
             .or_else(|_| Err(PolarsError::ComputeError("Missing category".into())))?;
 
-        let frequency_str = frequency_col.get(i)
+        let frequency_str = frequency_col
+            .get(i)
             .or_else(|_| Err(PolarsError::ComputeError("Missing frequency".into())))?;
 
         let frequency = scheduler_core::Frequency::from_frequency_str(&frequency_str.to_string());
@@ -144,7 +149,7 @@ pub fn schedule_events(inputs: &[Series], kwargs: ScheduleKwargs) -> PolarsResul
         entities.push(Entity {
             name: event.to_string(),
             category: category.to_string(),
-            frequency,
+            frequency: frequency?,
             constraints,
             windows,
         });
@@ -216,19 +221,27 @@ pub fn schedule_events(inputs: &[Series], kwargs: ScheduleKwargs) -> PolarsResul
     };
 
     // Prepare result arrays
-    let entity_names: Vec<_> = result.scheduled_events.iter()
+    let entity_names: Vec<_> = result
+        .scheduled_events
+        .iter()
         .map(|e| e.entity_name.trim_matches('"'))
         .collect();
 
-    let instances: Vec<_> = result.scheduled_events.iter()
+    let instances: Vec<_> = result
+        .scheduled_events
+        .iter()
         .map(|e| e.instance as i32)
         .collect();
 
-    let time_minutes: Vec<_> = result.scheduled_events.iter()
+    let time_minutes: Vec<_> = result
+        .scheduled_events
+        .iter()
         .map(|e| e.time_minutes)
         .collect();
 
-    let time_hhmm: Vec<_> = result.scheduled_events.iter()
+    let time_hhmm: Vec<_> = result
+        .scheduled_events
+        .iter()
         .map(|e| format_minutes_to_hhmm(e.time_minutes))
         .collect();
 
