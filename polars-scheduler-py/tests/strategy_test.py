@@ -21,7 +21,7 @@ def test_earliest_strategy():
     )
 
     scheduler = Scheduler(df)
-    result = scheduler.schedule(strategy="earliest", day_start="07:00", day_end="22:00")
+    result = scheduler.create(strategy="earliest", day_start="07:00", day_end="22:00")
 
     # With earliest strategy, should be at start of window
     pill_time = (
@@ -48,7 +48,7 @@ def test_latest_strategy():
     )
 
     scheduler = Scheduler(df)
-    result = scheduler.schedule(strategy="latest", day_start="07:00", day_end="22:00")
+    result = scheduler.create(strategy="latest", day_start="07:00", day_end="22:00")
 
     # With latest strategy, should be at end of window
     pill_time = (

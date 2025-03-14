@@ -20,7 +20,7 @@ def test_exact_time_window():
     )
 
     scheduler = Scheduler(df)
-    result = scheduler.schedule(strategy="earliest")
+    result = scheduler.create(strategy="earliest")
 
     breakfast = result.filter(pl.col("entity_name") == "breakfast")
     assert breakfast.select("time_hhmm").item() == "08:00"
@@ -46,14 +46,14 @@ def test_range_time_window():
     scheduler = Scheduler(df)
 
     # With earliest strategy
-    earliest = scheduler.schedule(strategy="earliest")
+    earliest = scheduler.create(strategy="earliest")
     lunch_time = (
         earliest.filter(pl.col("entity_name") == "lunch").select("time_minutes").item()
     )
     assert lunch_time == 720  # 12:00
 
     # With latest strategy
-    latest = scheduler.schedule(strategy="latest")
+    latest = scheduler.create(strategy="latest")
     lunch_time = (
         latest.filter(pl.col("entity_name") == "lunch").select("time_minutes").item()
     )
@@ -80,14 +80,14 @@ def test_multiple_windows():
     scheduler = Scheduler(df)
 
     # With earliest strategy, should pick first window
-    earliest = scheduler.schedule(strategy="earliest")
+    earliest = scheduler.create(strategy="earliest")
     shake_time = (
         earliest.filter(pl.col("entity_name") == "shake").select("time_minutes").item()
     )
     assert shake_time == 480  # 08:00
 
     # With latest strategy, should pick last window
-    latest = scheduler.schedule(strategy="latest")
+    latest = scheduler.create(strategy="latest")
     shake_time = (
         latest.filter(pl.col("entity_name") == "shake").select("time_minutes").item()
     )

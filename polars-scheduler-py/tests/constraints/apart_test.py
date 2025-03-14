@@ -19,7 +19,7 @@ def test_apart_constraint():
     )
 
     scheduler = Scheduler(df)
-    instances = scheduler.schedule(
+    instances = scheduler.create(
         strategy="earliest",
         day_start="07:00",
         day_end="22:00",

@@ -19,8 +19,9 @@ def test_scheduler_methods():
 def test_empty_schedule():
     """Test scheduling with an empty DataFrame."""
     df = pl.DataFrame()
+    # Preferably just `from polars_scheduler import Scheduler` and instantiate directly
     scheduler = df.scheduler()
-    result = scheduler.scheduler.schedule()  # YEESH
+    result = scheduler.create()
 
     # Should return an empty DataFrame with expected schema
     assert isinstance(result, pl.DataFrame)
@@ -51,7 +52,7 @@ def test_direct_construction():
 
     # Create scheduler directly
     scheduler = Scheduler(df)
-    result = scheduler.schedule()
+    result = scheduler.create()
 
     # Should have expected output
     assert result.height == 1
@@ -73,7 +74,7 @@ def test_plugin_api_works():
     )
 
     # Schedule it
-    result = schedule.scheduler.schedule()
+    result = schedule.scheduler.create()
 
     # Should have one pill event
     assert result.filter(pl.col("entity_name") == "pill").height == 1

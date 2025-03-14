@@ -32,5 +32,5 @@ def test_daily_frequency(frequency, expected_height):
     )
 
     scheduler = Scheduler(df)
-    result = scheduler.schedule()
+    result = scheduler.create()
     assert result.height == expected_height

@@ -21,14 +21,14 @@ def test_day_boundaries():
     scheduler = Scheduler(df)
 
     # With earliest strategy, should be at day_start
-    result = scheduler.schedule(strategy="earliest", day_start="09:00", day_end="21:00")
+    result = scheduler.create(strategy="earliest", day_start="09:00", day_end="21:00")
     pill_time = (
         result.filter(pl.col("entity_name") == "pill").select("time_minutes").item()
     )
     assert pill_time == 540  # 09:00 (day_start)
 
     # With latest strategy, should be at day_end
-    result = scheduler.schedule(strategy="latest", day_start="09:00", day_end="21:00")
+    result = scheduler.create(strategy="latest", day_start="09:00", day_end="21:00")
     pill_time = (
         result.filter(pl.col("entity_name") == "pill").select("time_minutes").item()
     )

@@ -155,7 +155,7 @@ class Scheduler:
         self._df = pl.concat([self._df, new_row], how="vertical")
         return
 
-    def schedule(
+    def create(
         self,
         strategy: str = "earliest",
         day_start: str = "08:00",

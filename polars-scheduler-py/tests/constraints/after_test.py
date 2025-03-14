@@ -22,7 +22,7 @@ def test_after_constraint():
     print(df)
 
     scheduler = Scheduler(df)
-    instances = scheduler.schedule(
+    instances = scheduler.create(
         strategy="earliest",
         day_start="07:00",
         day_end="22:00",

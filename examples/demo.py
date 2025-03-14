@@ -61,7 +61,7 @@ print("--- Schedule Constraints ---")
 print(scheduler._df)
 
 # Generate an optimized schedule (Earliest)
-result = scheduler.schedule(
+result = scheduler.create(
     strategy="earliest",
     day_start="07:00",
     day_end="22:00",
@@ -71,7 +71,7 @@ print("\n--- Optimized Schedule (Earliest) ---")
 print(result.select(["entity_name", "instance", "time_hhmm", "Category"]))
 
 # Generate an optimized schedule (Latest)
-result_latest = scheduler.schedule(
+result_latest = scheduler.create(
     strategy="latest",
     day_start="07:00",
     day_end="22:00",
