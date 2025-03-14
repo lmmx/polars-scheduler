@@ -158,7 +158,10 @@ def test_two_meal_window_usage(strategy, hhmm_1, hhmm_2):
     scheduler = Scheduler(df)
     print(scheduler._df)
     result = scheduler.create(
-        strategy=strategy, day_start="06:00", day_end="22:00", debug=True
+        strategy=strategy,
+        day_start="06:00",
+        day_end="22:00",
+        debug=True,
     )
     print(result)
     # First instance should be at 08:00 (lower point) with strategy earliest
@@ -201,11 +204,14 @@ def test_instance_order():
 
     scheduler = Scheduler(df)
     result = scheduler.create(
-        strategy="latest", day_start="06:00", day_end="22:00", debug=True
+        strategy="latest",
+        day_start="06:00",
+        day_end="22:00",
+        debug=True,
     )
 
     print(
-        result
+        result,
     )  # This is where you'll often see #1 => 20:00, #2 => 09:30 in some environments
 
     # If the solver picks the "pathological" labeling, the next assertion fails
@@ -218,6 +224,6 @@ def test_instance_order():
     time_inst1 = times.row(0)[1]
     time_inst2 = times.row(1)[1]
 
-    assert (
-        time_inst1 < time_inst2
-    ), f"Saw the 'flipped' scenario: instance #1 => {time_inst1}, instance #2 => {time_inst2}"
+    assert time_inst1 < time_inst2, (
+        f"Saw the 'flipped' scenario: instance #1 => {time_inst1}, instance #2 => {time_inst2}"
+    )
