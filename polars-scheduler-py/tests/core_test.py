@@ -12,7 +12,7 @@ def test_scheduler_methods():
     """Test that the scheduler namespace has the expected methods."""
     df = pl.DataFrame()
     assert hasattr(df.scheduler, "add")
-    assert hasattr(df.scheduler, "schedule")
+    assert hasattr(df.scheduler, "create")
 
 
 def test_empty_schedule():
