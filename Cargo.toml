@@ -22,8 +22,7 @@ serde = {version = "1.0.218", features = ["derive"]}
 colored = "3.0.0"
 clock-zones = "0.4.1"
 # Polars integration dependencies
-polars = {version = "0.46.0", features = ["dtype-struct", "ipc"], default-features = false}
-polars-arrow = {version = "0.46.0", default-features = false}
+polars = {version = "0.46.0", features = ["dtype-struct"], default-features = false}
 pyo3 = {version = "0.23.4", features = ["extension-module", "abi3-py38"]}
 pyo3-polars = {version = "0.20.0", features = ["derive"]}
 
