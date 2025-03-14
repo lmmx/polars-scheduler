@@ -2,7 +2,6 @@
 good_lp = {workspace = true}
 regex = {workspace = true}
 serde = {workspace = true}
-clock-zones = {workspace = true}
 
 [package]
 name = "scheduler-core"
