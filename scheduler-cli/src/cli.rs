@@ -44,7 +44,7 @@ pub fn parse_config_from_args() -> SchedulerConfig {
 
     // 5) Window tolerance
     if let Some(win_tol_arg) = args.iter().find(|a| a.starts_with("--tolerance=")) {
-        if let Ok(win_tol) = weight_arg["--tolerance=".len()..].parse::<f64>() {
+        if let Ok(win_tol) = win_tol_arg["--tolerance=".len()..].parse::<f64>() {
             config.window_tolerance = win_tol;
         }
     }
