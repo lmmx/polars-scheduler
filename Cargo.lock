@@ -255,15 +255,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "clock-zones"
-version = "0.4.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0afff82bdcbd69bb917f6f6cb9eeaabdc62214c878c79364d3b8e4b60b860f73"
-dependencies = [
-  "ordered-float"
-]
-
-[[package]]
 name = "colored"
 version = "3.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -894,15 +885,6 @@ name = "once_cell"
 version = "1.21.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d75b0bedcc4fe52caa0e03d9f1151a323e4aa5e2d78ba3580400cd3c9e2bc4bc"
-
-[[package]]
-name = "ordered-float"
-version = "2.10.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "68f19d67e5a2795c94e73e0bb1cc1a7edeb2e28efd39e2e1c9b7a40c1108b11c"
-dependencies = [
-  "num-traits"
-]
 
 [[package]]
 name = "parking_lot"
@@ -1840,7 +1822,6 @@ dependencies = [
 name = "scheduler-core"
 version = "0.1.0"
 dependencies = [
-  "clock-zones",
   "good_lp",
   "regex",
   "serde"
