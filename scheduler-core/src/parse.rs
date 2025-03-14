@@ -56,7 +56,7 @@ pub fn parse_from_table(rows: Vec<Vec<String>>) -> Result<Vec<Entity>, String> {
 
             // (3) build the entity
             Ok(Entity {
-                name: row[0].to_string(),
+                name: row[0].trim_matches('"').to_string(),
                 category: row[1].to_string(),
                 frequency: frequency,
                 constraints: cexprs,

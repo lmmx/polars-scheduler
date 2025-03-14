@@ -87,7 +87,14 @@ pub fn schedule_events(inputs: &[Series], kwargs: ScheduleKwargs) -> PolarsResul
             .get(i)
             .or_else(|_| Err(PolarsError::ComputeError("Missing frequency".into())))?;
 
-        let frequency = scheduler_core::Frequency::from_frequency_str(&frequency_str.to_string());
+        let frequency = match scheduler_core::Frequency::from_frequency_str(
+            &frequency_str.to_string().trim_matches('"'),
+        ) {
+            Ok(freq) => freq,
+            Err(e) => polars_bail!(
+                ComputeError: format!("Failed to parse frequency from '{}': {}", frequency_str, e)
+            ),
+        };
 
         // Parse constraints using a simpler approach
         let constraints = {
@@ -149,7 +156,7 @@ pub fn schedule_events(inputs: &[Series], kwargs: ScheduleKwargs) -> PolarsResul
         entities.push(Entity {
             name: event.to_string(),
             category: category.to_string(),
-            frequency: frequency?,
+            frequency,
             constraints,
             windows,
         });
