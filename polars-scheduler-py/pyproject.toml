@@ -46,6 +46,10 @@ dev = [
 Homepage = "https://github.com/lmmx/polars-scheduler"
 Repository = "https://github.com/lmmx/polars-scheduler.git"
 
+[tool.uv]
+# Uncomment to build Rust code in development mode
+config-settings = { build-args = "--profile=dev" }
+
 [tool.maturin]
 module-name = "polars_scheduler._polars_scheduler"
 python-source = "python"
