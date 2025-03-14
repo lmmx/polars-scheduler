@@ -51,3 +51,8 @@ module-name = "polars_scheduler._polars_scheduler"
 python-source = "python"
 release = true
 strip = true
+
+[tool.pytest.ini_options]
+markers = [
+  "failing: Tests that don't work",
+]
