@@ -56,3 +56,7 @@ strip = true
 markers = [
   "failing: Tests that don't work"
 ]
+
+[tool.uv]
+# Build Rust code in development mode (faster builds)
+config-settings = {build-args = "--profile=dev"}

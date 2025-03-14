@@ -83,24 +83,22 @@ def schedule_events(
 
 @register_dataframe_namespace("scheduler")
 class SchedulerPlugin:
-    def __init__(self, df: pl.DataFrame):
-        self._df = df
+    _schema = {
+        "Event": pl.String,
+        "Category": pl.String,
+        "Unit": pl.String,
+        "Amount": pl.Float64,
+        "Divisor": pl.Int64,
+        "Frequency": pl.String,
+        "Constraints": pl.List(pl.String),
+        "Windows": pl.List(pl.String),
+        "Note": pl.String,
+    }
 
-    def new(self) -> pl.DataFrame:
-        """Create a new empty schedule with the proper schema."""
-        return pl.DataFrame(
-            schema={
-                "Event": pl.String,
-                "Category": pl.String,
-                "Unit": pl.String,
-                "Amount": pl.Float64,
-                "Divisor": pl.Int64,
-                "Frequency": pl.String,
-                "Constraints": pl.List(pl.String),
-                "Windows": pl.List(pl.String),
-                "Note": pl.String,
-            },
-        )
+    def __init__(self, df: pl.DataFrame | None = None):
+        """Store schedule constraints, recreate the DataFrame if its schema is wrong."""
+        usable = df is not None and df.schema == self._schema
+        self._df = df if usable else pl.DataFrame(df, schema=self._schema)
 
     def add(
         self,
