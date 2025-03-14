@@ -291,8 +291,8 @@ pub fn solve_schedule(
                     let window_use_var = builder.add(variable().binary());
                     instance_window_vars.insert((cv.instance, w_idx), window_use_var);
 
-                    // Define "using a window" as being within 30 minutes of it
-                    let use_threshold = 30.0;
+                    // Define "using a window" as being within this many minutes of it
+                    let use_threshold = config.window_tolerance;
 
                     // If dist_iw <= use_threshold then window_use_var = 1
                     // Using big-M: dist_iw <= use_threshold + M*(1-window_use_var)

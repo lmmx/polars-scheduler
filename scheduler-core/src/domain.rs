@@ -119,6 +119,7 @@ pub struct SchedulerConfig {
     pub strategy: ScheduleStrategy,
     pub global_windows: Vec<WindowSpec>,
     pub penalty_weight: f64,
+    pub window_tolerance: f64,
 }
 
 impl Default for SchedulerConfig {
@@ -129,6 +130,7 @@ impl Default for SchedulerConfig {
             strategy: ScheduleStrategy::Earliest,
             global_windows: Vec::new(),
             penalty_weight: 0.3,
+            window_tolerance: 0.0,
         }
     }
 }
