@@ -1,4 +1,3 @@
-import polars as pl
 from polars_scheduler import Scheduler
 
 # Create a new empty schedule
