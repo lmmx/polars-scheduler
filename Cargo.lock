@@ -1396,6 +1396,7 @@ name = "polars-scheduler-py"
 version = "0.1.0"
 dependencies = [
  "polars",
+ "polars-arrow",
  "pyo3",
  "pyo3-polars",
  "scheduler-core",

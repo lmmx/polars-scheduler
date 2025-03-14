@@ -1,3 +1,11 @@
+[profile.dev]
+opt-level = 0
+lto = false
+codegen-units = 256
+panic = "abort"
+debug = false
+strip = "none"
+
 [profile.release]
 opt-level = 2
 lto = "thin"
