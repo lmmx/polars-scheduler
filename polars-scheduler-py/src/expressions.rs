@@ -1,8 +1,8 @@
 use polars::prelude::*;
 use pyo3_polars::derive::polars_expr;
 use scheduler_core::{
-    format_minutes_to_hhmm, parse_one_constraint, parse_one_window, solve_schedule, Entity,
-    ScheduleStrategy, SchedulerConfig,
+    format_minutes_to_hhmm, format_schedule, parse_one_constraint, parse_one_window,
+    solve_schedule, Entity, ScheduleStrategy, SchedulerConfig,
 };
 use serde::Deserialize;
 
@@ -236,6 +236,13 @@ pub fn schedule_events(inputs: &[Series], kwargs: ScheduleKwargs) -> PolarsResul
             ComputeError: format!("Scheduler error: {}", e)
         ),
     };
+
+    if kwargs.debug {
+        eprintln!(
+            "--- DEBUG: Final schedule ---\n{}",
+            format_schedule(&result)
+        );
+    }
 
     // Prepare result arrays
     let entity_names: Vec<_> = result
