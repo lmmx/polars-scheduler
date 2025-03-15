@@ -128,14 +128,30 @@ pub fn solve_schedule(
                 }
                 ConstraintType::Before => {
                     if let ConstraintRef::Unresolved(r) = &cexpr.cref {
-                        let ent = ba_map.entry(r.clone()).or_insert((None, None));
-                        ent.0 = Some(tv_min);
+                        // NEW approach: apply '≥ tv_min before SOME instance of r'
+                        apply_before_some(
+                            &mut builder,
+                            &mut add_constraint,
+                            &eclocks,
+                            tv_min,
+                            r,
+                            resolve_ref,
+                            debug_enabled,
+                        );
                     }
                 }
                 ConstraintType::After => {
                     if let ConstraintRef::Unresolved(r) = &cexpr.cref {
-                        let ent = ba_map.entry(r.clone()).or_insert((None, None));
-                        ent.1 = Some(tv_min);
+                        // NEW approach: apply '≥ tv_min after SOME instance of r'
+                        apply_after_some(
+                            &mut builder,
+                            &mut add_constraint,
+                            &eclocks,
+                            tv_min,
+                            r,
+                            resolve_ref,
+                            debug_enabled,
+                        );
                     }
                 }
             }
