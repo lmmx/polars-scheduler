@@ -23,8 +23,6 @@ pub enum Direction {
     After,
 }
 
-use good_lp::{constraint, variable, Constraint, Expression, ProblemVariables};
-
 /// For each subject clock s, we create binary vars x_{s,o} for every object clock o,
 /// and require sum(x_{s,o}) >= 1.
 /// If x_{s,o} = 1, then we enforce "s is at least 'offset' [Before|After] o".
@@ -58,11 +56,10 @@ fn apply_min_offset_at_least_one(
             match direction {
                 Direction::After => {
                     let desc = format!(
-                        "({label_prefix}) after: {} >= {} + {} if x_{}=1",
+                        "({label_prefix}) after: {} >= {} + {} if x_so=1",
                         c2str(s_cv),
                         c2str(o_cv),
-                        offset_minutes,
-                        x_so.name()
+                        offset_minutes
                     );
                     // s - o >= offset - M*(1 - x)
                     add_constraint(
@@ -72,11 +69,10 @@ fn apply_min_offset_at_least_one(
                 }
                 Direction::Before => {
                     let desc = format!(
-                        "({label_prefix}) before: {} + {} <= {} if x_{}=1",
+                        "({label_prefix}) before: {} + {} <= {} if x_so=1",
                         c2str(s_cv),
                         offset_minutes,
-                        c2str(o_cv),
-                        x_so.name()
+                        c2str(o_cv)
                     );
                     // o - s >= offset - M*(1 - x)
                     add_constraint(
@@ -195,7 +191,7 @@ pub fn solve_schedule(
             None => continue,
         };
 
-        let mut ba_map: HashMap<String, (Option<f64>, Option<f64>)> = HashMap::new();
+        let ba_map: HashMap<String, (Option<f64>, Option<f64>)> = HashMap::new();
         let mut apart_intervals = Vec::new();
         let mut apart_from_list = Vec::new();
 
