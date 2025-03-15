@@ -25,13 +25,15 @@ def test_apart_constraint():
         day_end="22:00",
     )
 
-    # Should have 2 instances
+    # Should have 2 instances of the same entity
     assert instances.height == 2
+    assert instances.get_column("entity_name").unique().to_list() == ["paracetamol"]
+    assert instances.get_column("instance").to_list() == [1, 2]
 
     # Get times and make sure they're at least 6h apart
-    times = instances.get_column("time_minutes").sort()
-    gap = times.diff().drop_nulls().item()
-    assert gap >= (6 * 60)  # 6 hours = 360 minutes
+    times = instances.sort("instance").get_column("time_minutes")
+    gap = times[1] - times[0]
+    assert gap >= (6 * 60), "Expected gap of at least 6h"
     
     
 def test_apart_constraint_with_different_intervals():
@@ -42,8 +44,8 @@ def test_apart_constraint_with_different_intervals():
         df = pl.DataFrame(
             {
                 "Event": ["medication"],
-                "Category": ["pill"],
-                "Unit": ["tablet"],
+                "Category": ["medication"],
+                "Unit": ["pill"],
                 "Amount": [None],
                 "Divisor": [None],
                 "Frequency": ["2x daily"],
@@ -58,17 +60,19 @@ def test_apart_constraint_with_different_intervals():
             strategy="earliest",
             day_start="07:00",
             day_end="22:00",
-            debug=True,  # Enable debugging
+            debug=True,
         )
 
-        # Get times and check spacing
-        times = instances.get_column("time_minutes").sort()
-        gap = times.diff().drop_nulls().item()
+        # Get times in order of instance
+        times = instances.sort("instance").get_column("time_minutes")
+        gap = times[1] - times[0]
         
-        print(f"For {interval}h apart: First dose at {times[0]/60:.2f}h, Second dose at {times[1]/60:.2f}h")
-        print(f"Gap: {gap/60:.2f}h (required: {interval}h)")
+        print("For {}h apart: First dose at {}h, Second dose at {}h".format(
+            interval, times[0] // 60, times[1] // 60
+        ))
+        print("Gap: {}h (required: {}h)".format(gap // 60, interval))
         
-        assert gap >= (interval * 60), f"Expected gap of at least {interval}h, but got {gap/60:.2f}h"
+        assert gap >= (interval * 60), "Expected gap of at least {}h".format(interval)
 
 
 def test_apart_constraint_with_more_instances():
@@ -94,19 +98,22 @@ def test_apart_constraint_with_more_instances():
         day_end="22:00",
     )
 
-    # Should have 3 instances
+    # Should have 3 instances of the same entity
     assert instances.height == 3
+    assert instances.get_column("entity_name").unique().to_list() == ["ibuprofen"]
+    instance_list = instances.get_column("instance").to_list()
+    instance_list.sort()
+    assert instance_list == [1, 2, 3], "Expected instances 1, 2, 3 but got {}".format(instance_list)
 
-    # Get times and make sure each pair is at least 4h apart
-    times = instances.filter(pl.col("entity_name") == "ibuprofen").get_column("time_minutes").sort()
-    
-    # Check if there are 3 times
-    assert len(times) == 3, f"Expected 3 instances, got {len(times)}"
+    # Get times in ascending order by instance
+    times = instances.sort("instance").get_column("time_minutes")
     
     # Check spacing between consecutive times
     for i in range(1, len(times)):
         gap = times[i] - times[i-1]
-        assert gap >= (4 * 60), f"Gap between dose {i} and {i+1} is {gap/60:.2f}h, less than 4h"
+        assert gap >= (4 * 60), "Gap between instance {} and {} is {}h, less than 4h".format(
+            i, i+1, gap // 60
+        )
 
 
 def test_apart_constraint_with_earliest_strategy():
@@ -114,8 +121,8 @@ def test_apart_constraint_with_earliest_strategy():
     df = pl.DataFrame(
         {
             "Event": ["medicine"],
-            "Category": ["pill"],
-            "Unit": ["tablet"],
+            "Category": ["medication"],
+            "Unit": ["pill"],
             "Amount": [None],
             "Divisor": [None],
             "Frequency": ["2x daily"],
@@ -136,13 +143,13 @@ def test_apart_constraint_with_earliest_strategy():
     # First dose: 06:00 (as early as possible)
     # Second dose: 14:00 (8h later)
     
-    times = instances.get_column("time_minutes").sort()
+    times = instances.sort("instance").get_column("time_minutes")
     
     # First dose should be at the start of the day (6:00 = 360 minutes)
-    assert times[0] == 360, f"First dose should be at 06:00, but was at {times[0]/60:.2f}"
+    assert times[0] == 360, "First dose should be at 06:00, but was at {}".format(times[0] // 60)
     
     # Second dose should be exactly 8h later (14:00 = 840 minutes)
-    assert times[1] == 840, f"Second dose should be at 14:00, but was at {times[1]/60:.2f}"
+    assert times[1] == 840, "Second dose should be at 14:00, but was at {}".format(times[1] // 60)
 
 
 def test_apart_constraint_with_latest_strategy():
@@ -150,8 +157,8 @@ def test_apart_constraint_with_latest_strategy():
     df = pl.DataFrame(
         {
             "Event": ["medicine"],
-            "Category": ["pill"],
-            "Unit": ["tablet"],
+            "Category": ["medication"],
+            "Unit": ["pill"],
             "Amount": [None],
             "Divisor": [None],
             "Frequency": ["2x daily"],
@@ -172,13 +179,13 @@ def test_apart_constraint_with_latest_strategy():
     # Second dose: 22:00 (as late as possible)
     # First dose: 14:00 (8h earlier)
     
-    times = instances.get_column("time_minutes").sort()
+    times = instances.sort("instance").get_column("time_minutes")
     
     # First dose should be 8h before end of day (14:00 = 840 minutes)
-    assert times[0] == 840, f"First dose should be at 14:00, but was at {times[0]/60:.2f}"
+    assert times[0] == 840, "First dose should be at 14:00, but was at {}".format(times[0] // 60)
     
     # Second dose should be at the end of the day (22:00 = 1320 minutes)
-    assert times[1] == 1320, f"Second dose should be at 22:00, but was at {times[1]/60:.2f}"
+    assert times[1] == 1320, "Second dose should be at 22:00, but was at {}".format(times[1] // 60)
 
 
 def test_apart_constraint_with_window():
@@ -186,8 +193,8 @@ def test_apart_constraint_with_window():
     df = pl.DataFrame(
         {
             "Event": ["medicine"],
-            "Category": ["pill"],
-            "Unit": ["tablet"],
+            "Category": ["medication"],
+            "Unit": ["pill"],
             "Amount": [None],
             "Divisor": [None],
             "Frequency": ["2x daily"],
@@ -209,7 +216,7 @@ def test_apart_constraint_with_window():
     # First dose should be at 08:00
     # Second dose should be at 20:00 (12h later, which satisfies ≥8h)
     
-    times = instances.get_column("time_hhmm").sort()
+    times = instances.sort("instance").get_column("time_hhmm")
     
-    assert times[0] == "08:00", f"First dose should be at 08:00, but was at {times[0]}"
-    assert times[1] == "20:00", f"Second dose should be at 20:00, but was at {times[1]}"
+    assert times[0] == "08:00", "First dose should be at 08:00, but was at {}".format(times[0])
+    assert times[1] == "20:00", "Second dose should be at 20:00, but was at {}".format(times[1])
