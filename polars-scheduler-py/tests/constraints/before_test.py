@@ -4,7 +4,7 @@ from polars_scheduler import Scheduler
 
 
 @pytest.mark.failing()
-def test_after_constraint():
+def test_before_constraint():
     """Test the '≥Xh after Y' constraint."""
     df = pl.DataFrame(
         {
