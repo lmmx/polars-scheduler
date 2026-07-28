@@ -68,11 +68,7 @@ def test_apart_constraint_with_different_intervals():
         gap = times[1] - times[0]
 
         print(
-            "For {}h apart: First dose at {}h, Second dose at {}h".format(
-                interval,
-                times[0] // 60,
-                times[1] // 60,
-            ),
+            f"For {interval}h apart: First dose at {times[0] // 60}h, Second dose at {times[1] // 60}h",
         )
         print(f"Gap: {gap // 60}h (required: {interval}h)")
 
@@ -118,11 +114,7 @@ def test_apart_constraint_with_more_instances():
     for i in range(1, len(times)):
         gap = times[i] - times[i - 1]
         assert gap >= (4 * 60), (
-            "Gap between instance {} and {} is {}h, less than 4h".format(
-                i,
-                i + 1,
-                gap // 60,
-            )
+            f"Gap between instance {i} and {i + 1} is {gap // 60}h, less than 4h"
         )
 
 

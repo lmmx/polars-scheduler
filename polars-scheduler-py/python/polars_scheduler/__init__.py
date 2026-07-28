@@ -165,7 +165,6 @@ class Scheduler:
 
         # Append to existing DataFrame
         self._df = pl.concat([self._df, new_row], how="vertical")
-        return
 
     def create(
         self,
