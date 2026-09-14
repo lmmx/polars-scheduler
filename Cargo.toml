@@ -24,15 +24,15 @@ resolver = "2"
 
 [workspace.dependencies]
 # Core dependencies
-good_lp = {version = "1.12.0", features = ["microlp"], default-features = false}
+good_lp = { version = "1.12.0", features = ["microlp"], default-features = false }
 regex = "1.11.1"
-serde = {version = "1.0.218", features = ["derive"]}
+serde = { version = "1.0.218", features = ["derive"] }
 colored = "3.0.0"
 # Polars integration dependencies
-polars = {version = "0.46.0", features = ["dtype-struct"], default-features = false}
-polars-arrow = {version = "0.46.0", default-features = false}
-pyo3 = {version = "0.23.4", features = ["extension-module", "abi3-py38"]}
-pyo3-polars = {version = "0.20.0", features = ["derive"]}
+polars = { version = "0.46.0", features = ["dtype-struct"], default-features = false }
+polars-arrow = { version = "0.46.0", default-features = false }
+pyo3 = { version = "0.23.4", features = ["extension-module", "abi3-py38"] }
+pyo3-polars = { version = "0.20.0", features = ["derive"] }
 
 [workspace.package]
 version = "0.1.0"
