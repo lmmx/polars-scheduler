@@ -1,6 +1,6 @@
 [dependencies]
-scheduler-core = {path = "../scheduler-core"}
-serde = {workspace = true, features = ["derive"]}
+scheduler-core = { path = "../scheduler-core" }
+serde = { workspace = true, features = ["derive"] }
 polars.workspace = true
 polars-arrow.workspace = true
 pyo3.workspace = true
