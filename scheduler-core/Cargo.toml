@@ -1,7 +1,7 @@
 [dependencies]
-good_lp = {workspace = true}
-regex = {workspace = true}
-serde = {workspace = true}
+good_lp = { workspace = true }
+regex = { workspace = true }
+serde = { workspace = true }
 
 [package]
 name = "scheduler-core"
