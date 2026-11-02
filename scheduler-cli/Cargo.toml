@@ -1,6 +1,6 @@
 [dependencies]
-scheduler-core = {path = "../scheduler-core"}
-colored = {workspace = true}
+scheduler-core = { path = "../scheduler-core" }
+colored = { workspace = true }
 
 [package]
 name = "scheduler-cli"
